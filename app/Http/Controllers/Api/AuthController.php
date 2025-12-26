@@ -19,9 +19,7 @@ class AuthController extends Controller
      * Creates a new user account with validated credentials
      * ONLY accessible by administrator
      *
-     * strator - administrator
-     *
-     * strator can create admission, nurse, or doctor roles
+     * Administrator can create admission, nurse, or doctor roles
      */
     public function register(RegisterRequest $request)
     {
@@ -29,14 +27,10 @@ class AuthController extends Controller
 
         // Additional security check: Prevent creating administrator
 
-        // strator through API
+        // Administrator through API
         // Root user is only created via seeder
-        if ($role === 'administrator
-
-        strator') {
-            Log::warning('Attempt to create administrator
-
-            strator via API blocked', [
+        if ($role === 'administrator') {
+            Log::warning('Attempt to create administrator via API blocked', [
                 'attempted_by' => $request->user()->id,
                 'email' => $request->user()->email,
                 'ip' => $request->ip(),
@@ -57,9 +51,7 @@ class AuthController extends Controller
         ]);
 
         // Log registration for audit trail
-        Log::info('User registered by administrator
-
-        strator', [
+        Log::info('User registered by administrator', [
             'created_user_id' => $user->id,
             'created_email' => $user->email,
             'created_role' => $user->role,
@@ -213,8 +205,7 @@ class AuthController extends Controller
      * Returns a list of users in the system
      * Can show active users or soft-deleted users based on query parameter
      * ONLY accessible by administrator
-     *
-     * strator
+
      */
     public function index(Request $request)
     {
@@ -229,9 +220,7 @@ class AuthController extends Controller
                 ->get();
 
             // Log deleted users list access for audit trail
-            Log::info('Deleted users list accessed by administrator
-
-            strator', [
+            Log::info('Deleted users list accessed by administrator', [
                 'accessed_by' => $request->user()->id,
                 'accessed_by_email' => $request->user()->email,
                 'total_deleted_users' => $users->count(),
@@ -251,9 +240,7 @@ class AuthController extends Controller
             ->get();
 
         // Log user list access for audit trail
-        Log::info('User list accessed by administrator
-
-        strator', [
+        Log::info('User list accessed by administrator', [
             'accessed_by' => $request->user()->id,
             'accessed_by_email' => $request->user()->email,
             'total_users' => $users->count(),
@@ -302,12 +289,8 @@ class AuthController extends Controller
 
         // Prevent root user from resetting their own password through this endpoint
         // (They should use the standard forgot password flow)
-        if ($user->role === 'administrator
-
-        strator') {
-            Log::warning('Attempt to send password reset link to administrator
-
-            strator via admin endpoint blocked', [
+       if ($user->role === 'administrator') {
+            Log::warning('Attempt to send password reset link to administrator via admin endpoint blocked', [
                 'attempted_by' => $request->user()->id,
                 'target_user_id' => $user->id,
                 'ip' => $request->ip(),
@@ -324,9 +307,7 @@ class AuthController extends Controller
         );
 
         // Log the action for audit trail
-        Log::info('Password reset link sent by administrator
-
-        strator', [
+        Log::info('Password reset link sent by administrator', [
             'target_user_id' => $user->id,
             'target_email' => $user->email,
             'sent_by' => $request->user()->id,
@@ -346,8 +327,7 @@ class AuthController extends Controller
      * Delete User Endpoint
      * Deletes a user from the system
      * ONLY accessible by administrator
-     *
-     * strator
+
      */
     public function destroy(Request $request, $id)
     {
@@ -367,12 +347,8 @@ class AuthController extends Controller
         }
 
         // Prevent deleting root user
-        if ($user->role === 'administrator
-
-        strator') {
-            Log::warning('Attempt to delete administrator
-
-            strator blocked', [
+        if ($user->role === 'administrator') {
+            Log::warning('Attempt to delete administrator blocked', [
                 'attempted_by' => $request->user()->id,
                 'target_user_id' => $user->id,
                 'ip' => $request->ip(),
@@ -395,9 +371,7 @@ class AuthController extends Controller
         $user->delete();
 
         // Log the deletion for audit trail
-        Log::info('User deleted by administrator
-
-        strator', [
+        Log::info('User deleted by administrator', [
             'deleted_user_id' => $deletedUserInfo['id'],
             'deleted_email' => $deletedUserInfo['email'],
             'deleted_role' => $deletedUserInfo['role'],
@@ -417,8 +391,7 @@ class AuthController extends Controller
      * Restore User Endpoint
      * Restores a soft-deleted user
      * ONLY accessible by administrator
-     *
-     * strator
+
      */
     public function restore(Request $request, $id)
     {
@@ -446,9 +419,7 @@ class AuthController extends Controller
         }
 
         // Prevent restoring root user (should not be deleted in first place)
-        if ($user->role === 'administrator
-
-        strator') {
+        if ($user->role === 'administrator') {
             Log::warning('Attempt to restore administrator
 
             strator', [
@@ -475,9 +446,7 @@ class AuthController extends Controller
         $user->restore();
 
         // Log the restoration for audit trail
-        Log::info('User restored by administrator
-
-        strator', [
+        Log::info('User restored by administrator', [
             'restored_user_id' => $restoredUserInfo['id'],
             'restored_email' => $restoredUserInfo['email'],
             'restored_role' => $restoredUserInfo['role'],

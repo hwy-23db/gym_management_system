@@ -9,14 +9,14 @@ class RegisterRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
-     * Only root_user can register new users.
-     * Note: This is a secondary check - the root_user middleware also enforces this.
+     * Only administrator can register new users.
+     * Note: This is a secondary check - the administrator middleware also enforces this.
      */
     public function authorize(): bool
     {
-        // The root_user middleware already ensures only root_user can access this endpoint
+        // The administrator middleware already ensures only administrator can access this endpoint
         // This is kept as a defense-in-depth measure
-        return $this->user()?->role === 'root_user' ?? false;
+        return $this->user()?->role === 'administrator' ?? false;
     }
 
     /**
@@ -40,8 +40,8 @@ class RegisterRequest extends FormRequest
                     ->uncompromised(),
             ],
             'password_confirmation' => ['required', 'string'],
-            // Root user can create any role except root_user (only 1 root_user allowed)
-            'role' => ['required', 'in:admission,nurse,doctor'],
+             // Administrator can create any role except administrator (only 1 administrator allowed)
+            'role' => ['required', 'in:administrator,trainer,user'],
         ];
     }
 
@@ -56,7 +56,7 @@ class RegisterRequest extends FormRequest
             'name.regex' => 'The name field may only contain letters and spaces.',
             'password.confirmed' => 'The password confirmation does not match.',
             'password.min' => 'The password must be at least 8 characters.',
-            'role.in' => 'Invalid role selected. Root user can only create admission, nurse, or doctor roles. Root user cannot be created.',
+            'role.in' => 'Invalid role selected. Root user can only create administrator, trainer, or user roles. Root user cannot be created.',
         ];
     }
 

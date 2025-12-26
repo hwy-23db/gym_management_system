@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 
 class AuthenticatedSessionController extends Controller
@@ -22,40 +22,38 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
-  public function store(Request $request)
-{
-    $request->validate([
-        'email' => 'required|email',
-        'password' => 'required',
-    ]);
+    public function store(LoginRequest $request): RedirectResponse
+    {
+        // ✅ If you are using captcha on the login page, validate it here
+        // Make sure your input name is: name="captcha"
+        $validator = Validator::make($request->all(), [
+            'captcha' => ['required', 'captcha'],
+        ]);
 
-    if (!Auth::attempt($request->only('email', 'password'))) {
-        return back()->withErrors(['email' => 'Invalid credentials']);
+        if ($validator->fails()) {
+            return back()
+                ->withErrors($validator)
+                ->withInput($request->only('email', 'remember'));
+        }
+
+        // Breeze default: this will attempt login using email/password
+        $request->authenticate();
+
+        // Important: regenerate session so login persists
+        $request->session()->regenerate();
+
+        // ✅ Redirect to intended page (dashboard by default)
+        return redirect()->intended(route('dashboard'));
     }
-
-    $request->session()->regenerate();
-
-    $role = Auth::user()->role;
-
-    // Redirect based on role
-    switch ($role) {
-        case 'root_user':
-            return redirect()->route('dashboard');
-        default:
-            Auth::logout();
-            return redirect()->route('login')->withErrors('Unauthorized role');
-    }
-}
 
     /**
      * Destroy an authenticated session.
      */
     public function destroy(Request $request): RedirectResponse
     {
-        Auth::guard('web')->logout();
+        auth()->guard('web')->logout();
 
         $request->session()->invalidate();
-
         $request->session()->regenerateToken();
 
         return redirect('/');

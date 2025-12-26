@@ -2,7 +2,18 @@
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
-    <form method="POST" action="{{ url('/api/login') }}">
+    <!-- Validation Errors -->
+    @if ($errors->any())
+        <div class="mb-4 text-sm text-red-600">
+            <ul class="list-disc list-inside">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    <form method="POST" action="{{ route('login') }}">
         @csrf
 
         <!-- Email -->
@@ -37,54 +48,53 @@
 
         <!-- CAPTCHA -->
         <div class="mt-4">
-            <x-input-label value="Captcha" />
+            <x-input-label for="captcha" value="Captcha" />
 
             <div class="flex items-center gap-3 mt-2">
-                <span id="captcha-img">
-                    {!! captcha_img() !!}
-                </span>
-
-                <button
-                    type="button"
-                    onclick="refreshCaptcha()"
-                    class="px-3 py-2 text-sm bg-gray-200 rounded hover:bg-gray-300"
-                >
+                <span id="captcha-img">{!! captcha_img() !!}</span>
+                <button type="button"
+                        onclick="refreshCaptcha()"
+                        class="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md text-sm">
                     ↻
                 </button>
             </div>
 
-            <input
+            <x-text-input
+                id="captcha"
+                class="block mt-2 w-full"
                 type="text"
                 name="captcha"
-                class="block w-full mt-3 border-gray-300 rounded-md shadow-sm"
-                placeholder="Enter captcha"
                 required
+                autocomplete="off"
+                placeholder="Enter captcha"
             />
-
             <x-input-error :messages="$errors->get('captcha')" class="mt-2" />
         </div>
 
         <!-- Remember Me -->
         <div class="block mt-4">
-            <label class="inline-flex items-center">
-                <input
-                    type="checkbox"
-                    name="remember"
-                    class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
-                >
-                <span class="ml-2 text-sm text-gray-600">Remember me</span>
+            <label for="remember_me" class="inline-flex items-center">
+                <input id="remember_me" type="checkbox"
+                       class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
+                       name="remember">
+                <span class="ms-2 text-sm text-gray-600">Remember me</span>
             </label>
         </div>
 
-        <!-- Actions -->
         <div class="flex items-center justify-end mt-4">
-            <x-primary-button class="ml-3">
+            @if (Route::has('password.request'))
+                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                   href="{{ route('password.request') }}">
+                    Forgot your password?
+                </a>
+            @endif
+
+            <x-primary-button class="ms-3">
                 Log in
             </x-primary-button>
         </div>
     </form>
 
-    <!-- CAPTCHA Refresh Script -->
     <script>
         function refreshCaptcha() {
             fetch('/captcha-refresh')

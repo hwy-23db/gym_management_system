@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -32,8 +33,24 @@ Route::get('/', function () {
 
 // Blade dashboard (admin dashboard)
 Route::get('/dashboard', function () {
-    return view('dashboard');
+        return view('dashboard', [
+        'stats' => [
+            'totalUsers' => User::count(),
+            'activeUsers' => User::whereNotNull('email_verified_at')->count(),
+            'unreadMessages' => 0,
+            'blogs' => 0,
+        ],
+    ]);
 })->middleware(['auth'])->name('dashboard');
+
+ Route::view('/attendance', 'pages.attendance')->name('attendance.index');
+    Route::view('/reports', 'pages.reports')->name('reports.index');
+    Route::view('/users', 'pages.users')->name('users.index');
+    Route::view('/subscriptions', 'pages.subscriptions')->name('subscriptions.index');
+    Route::view('/pricing', 'pages.pricing')->name('pricing.index');
+    Route::view('/trainer-bookings', 'pages.trainer-bookings')->name('trainer-bookings.index');
+    Route::view('/messages', 'pages.messages')->name('messages.index');
+    Route::view('/blogs', 'pages.blogs')->name('blogs.index');
 
 /*
 |--------------------------------------------------------------------------
@@ -62,6 +79,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    Route::view('/users', 'users.index')
+        ->middleware('administrator')
+        ->name('users.index');
 });
 
 

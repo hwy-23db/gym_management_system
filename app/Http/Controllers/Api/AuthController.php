@@ -7,7 +7,6 @@ use App\Http\Requests\Api\LoginRequest;
 use App\Http\Requests\Api\RegisterRequest;
 use App\Http\Requests\Api\ForgotPasswordRequest;
 use App\Http\Requests\Api\UpdateProfileRequest;
-use App\Http\Requests\Api\UpdateUserRequest;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
@@ -72,125 +71,6 @@ class AuthController extends Controller
                 'created_at' => $user->created_at,
             ]
         ], 201);
-    }
-
-        /**
-     * Show User Endpoint
-     * Returns a single user's details
-     * ONLY accessible by administrator
-     */
-    public function show(Request $request, $id)
-    {
-        if (!is_numeric($id) || (int) $id != $id) {
-            return response()->json([
-                'message' => 'Invalid user ID provided.'
-            ], 400);
-        }
-
-        $user = User::select('id', 'name', 'email', 'role', 'email_verified_at', 'created_at', 'updated_at')
-            ->find($id);
-
-        if (!$user) {
-            return response()->json([
-                'message' => 'The specified user does not exist.'
-            ], 404);
-        }
-
-        return response()->json([
-            'message' => 'User retrieved successfully',
-            'user' => $user,
-        ]);
-    }
-
-    /**
-     * Update User Endpoint
-     * Updates a user's profile information
-     * ONLY accessible by administrator
-     */
-    public function updateUser(UpdateUserRequest $request, $id)
-    {
-        if (!is_numeric($id) || (int) $id != $id) {
-            return response()->json([
-                'message' => 'Invalid user ID provided.'
-            ], 400);
-        }
-
-        $user = User::find($id);
-
-        if (!$user) {
-            return response()->json([
-                'message' => 'The specified user does not exist.'
-            ], 404);
-        }
-
-        if ($user->role === 'administrator') {
-            return response()->json([
-                'message' => 'Cannot update root user through this endpoint.'
-            ], 403);
-        }
-
-        $validated = $request->validated();
-        $updatedFields = [];
-
-        if (array_key_exists('name', $validated)) {
-            $user->name = $validated['name'];
-            $updatedFields[] = 'name';
-        }
-
-        if (array_key_exists('email', $validated)) {
-            $oldEmail = $user->email;
-            $user->email = $validated['email'];
-            $updatedFields[] = 'email';
-
-            if ($oldEmail !== $user->email) {
-                $user->email_verified_at = null;
-            }
-        }
-
-        if (array_key_exists('role', $validated)) {
-            $user->role = $validated['role'];
-            $updatedFields[] = 'role';
-        }
-
-        if (!empty($validated['password'])) {
-            $user->password = $validated['password'];
-            $updatedFields[] = 'password';
-        }
-
-        if (empty($updatedFields)) {
-            return response()->json([
-                'message' => 'No changes provided.',
-                'user' => [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'role' => $user->role,
-                ]
-            ], 200);
-        }
-
-        $user->save();
-
-        Log::info('User updated by administrator', [
-            'updated_user_id' => $user->id,
-            'updated_email' => $user->email,
-            'updated_fields' => $updatedFields,
-            'updated_by' => $request->user()->id,
-            'updated_by_email' => $request->user()->email,
-            'ip' => $request->ip(),
-        ]);
-
-        return response()->json([
-            'message' => 'User updated successfully',
-            'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'role' => $user->role,
-                'email_verified_at' => $user->email_verified_at,
-                'updated_at' => $user->updated_at,
-            ]
-        ], 200);
     }
 
     /**

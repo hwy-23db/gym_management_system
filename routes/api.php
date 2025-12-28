@@ -53,16 +53,6 @@ Route::middleware('auth:sanctum')->group(function () {
         // List users (active by default, add ?deleted=true for deleted users)
         Route::get('/users', [AuthController::class, 'index']);
 
-        // Create a user (alias of register for admin usage)
-        Route::post('/users', [AuthController::class, 'register']);
-
-        // View a single user
-        Route::get('/users/{id}', [AuthController::class, 'show']);
-
-        // Update a user
-        Route::put('/users/{id}', [AuthController::class, 'updateUser']);
-        Route::patch('/users/{id}', [AuthController::class, 'updateUser']);
-
         // Send password reset link to a user
         Route::post('/users/forgot-password', [AuthController::class, 'sendPasswordResetLink']);
 

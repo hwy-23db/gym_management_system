@@ -8,14 +8,14 @@ class ForgotPasswordRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
-     * Only root_user can send password reset links.
-     * Note: This is a secondary check - the root_user middleware also enforces this.
+     * Only administrator can send password reset links.
+     * Note: This is a secondary check - the administrator middleware also enforces this.
      */
     public function authorize(): bool
     {
-        // The root_user middleware already ensures only root_user can access this endpoint
+        // The administrator middleware already ensures only administrator can access this endpoint
         // This is kept as a defense-in-depth measure
-        return $this->user()?->role === 'root_user' ?? false;
+        return $this->user()?->role === 'administrator' ?? false;
     }
 
     /**

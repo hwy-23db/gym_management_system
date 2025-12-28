@@ -40,8 +40,8 @@ class RegisterRequest extends FormRequest
                     ->uncompromised(),
             ],
             'password_confirmation' => ['required', 'string'],
-             // Administrator can create any role except administrator (only 1 administrator allowed)
-            'role' => ['required', 'in:administrator,trainer,user'],
+             // Administrator can create trainer or user roles
+            'role' => ['required', 'in:trainer,user'],
         ];
     }
 
@@ -56,7 +56,7 @@ class RegisterRequest extends FormRequest
             'name.regex' => 'The name field may only contain letters and spaces.',
             'password.confirmed' => 'The password confirmation does not match.',
             'password.min' => 'The password must be at least 8 characters.',
-            'role.in' => 'Invalid role selected. Root user can only create administrator, trainer, or user roles. Root user cannot be created.',
+            'role.in' => 'Invalid role selected. Role must be trainer or user.',
         ];
     }
 

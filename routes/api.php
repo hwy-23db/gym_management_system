@@ -69,10 +69,12 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/pricing/trainers/{user}', [PricingController::class, 'updateTrainer']);
 
         // Subscription management endpoints
-        Route::get('/subscriptions/api', [SubscriptionController::class, 'index']);
-        Route::get('/subscriptions/api/options', [SubscriptionController::class, 'options']);
-        Route::post('/subscriptions/api', [SubscriptionController::class, 'store']);
-        Route::post('/subscriptions/api/{subscription}/hold', [SubscriptionController::class, 'hold']);
-        Route::post('/subscriptions/api/{subscription}/resume', [SubscriptionController::class, 'resume']);
+        Route::prefix('subscriptions')->group(function () {
+    Route::get('/', [SubscriptionController::class, 'index']);
+    Route::post('/', [SubscriptionController::class, 'store']);
+    Route::get('/options', [SubscriptionController::class, 'options']);
+    Route::post('/{subscription}/hold', [SubscriptionController::class, 'hold']);
+    Route::post('/{subscription}/resume', [SubscriptionController::class, 'resume']);
+});
     });
 });

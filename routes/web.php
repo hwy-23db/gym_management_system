@@ -40,9 +40,7 @@ Route::get('/dashboard', function () {
  Route::view('/attendance', 'pages.attendance')->name('attendance.index');
     Route::view('/reports', 'pages.reports')->name('reports.index');
     Route::view('/users', 'pages.users')->middleware(['auth', 'administrator'])->name('users.index');
-    Route::view('/subscriptions', 'pages.subscriptions')
-        ->middleware(['auth', 'administrator'])
-        ->name('subscriptions.index');
+    Route::view('/subscriptions', 'pages.subscriptions')->name('subscriptions.index');
     Route::get('/pricing', [PricingController::class, 'index'])
         ->middleware(['auth', 'administrator'])
         ->name('pricing.index');

@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PricingController;
+use App\Http\Controllers\Api\SubscriptionController;
 
 // Login endpoint - rate limiting is handled in LoginRequest class
 // 5 attempts per email+IP combination with 60 second lockout
@@ -66,5 +67,10 @@ Route::middleware('auth:sanctum')->group(function () {
         // Trainer pricing endpoints
         Route::put('/pricing/monthly', [PricingController::class, 'updateMonthly']);
         Route::put('/pricing/trainers/{user}', [PricingController::class, 'updateTrainer']);
+
+        // Subscription management endpoints
+        Route::get('/subscriptions', [SubscriptionController::class, 'index']);
+        Route::post('/subscriptions/{subscription}/hold', [SubscriptionController::class, 'hold']);
+        Route::post('/subscriptions/{subscription}/resume', [SubscriptionController::class, 'resume']);
     });
 });

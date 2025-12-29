@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\PricingController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -40,7 +41,15 @@ Route::get('/dashboard', function () {
     Route::view('/reports', 'pages.reports')->name('reports.index');
     Route::view('/users', 'pages.users')->middleware(['auth', 'administrator'])->name('users.index');
     Route::view('/subscriptions', 'pages.subscriptions')->name('subscriptions.index');
-    Route::view('/pricing', 'pages.pricing')->name('pricing.index');
+    Route::get('/pricing', [PricingController::class, 'index'])
+        ->middleware(['auth', 'administrator'])
+        ->name('pricing.index');
+    Route::put('/pricing/monthly', [PricingController::class, 'updateMonthly'])
+        ->middleware(['auth', 'administrator'])
+        ->name('pricing.update-monthly');
+    Route::put('/pricing/trainers/{user}', [PricingController::class, 'updateTrainer'])
+        ->middleware(['auth', 'administrator'])
+        ->name('pricing.update-trainer');
     Route::view('/trainer-bookings', 'pages.trainer-bookings')->name('trainer-bookings.index');
     Route::view('/messages', 'pages.messages')->name('messages.index');
     Route::view('/blogs', 'pages.blogs')->name('blogs.index');

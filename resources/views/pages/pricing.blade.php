@@ -5,8 +5,7 @@
         </h2>
     </x-slot>
 
-<div class="py-12">
-        {{-- Changed max-w-5xl -> max-w-7xl so 3 cards fit nicely in one row --}}
+<div class="py-6">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
             @if (session('status'))
                 <div class="rounded-md bg-emerald-50 px-4 py-3 text-sm text-emerald-800 shadow-sm">
@@ -15,7 +14,7 @@
             @endif
 
 {{-- Subscription Plans --}}
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-3">
 
     {{-- Monthly --}}
     <div class="bg-white rounded-lg shadow-sm">
@@ -43,7 +42,7 @@
                     <span class="px-3 flex items-center bg-gray-100">MMK</span>
                 </div>
 
-                <button class="w-full bg-black text-white py-2 rounded-md hover:bg-gray-900">
+                <button class="w-full bg-white text-dark py-2 rounded-md hover:bg-gray-900">
                     Update
                 </button>
             </form>

@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\PricingController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Api\SubscriptionController;
+use App\Http\Controllers\Admin\TrainerBookingController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -59,7 +60,15 @@ Route::put('/pricing/annual', [PricingController::class, 'updateAnnual'])
 Route::put('/pricing/trainers/{user}', [PricingController::class, 'updateTrainer'])
     ->middleware(['auth', 'administrator'])
     ->name('pricing.update-trainer');
-Route::view('/trainer-bookings', 'pages.trainer-bookings')->name('trainer-bookings.index');
+Route::get('/trainer-bookings', [TrainerBookingController::class, 'index'])
+    ->middleware(['auth', 'administrator'])
+    ->name('trainer-bookings.index');
+Route::post('/trainer-bookings', [TrainerBookingController::class, 'store'])
+    ->middleware(['auth', 'administrator'])
+    ->name('trainer-bookings.store');
+Route::patch('/trainer-bookings/{booking}/mark-paid', [TrainerBookingController::class, 'markPaid'])
+    ->middleware(['auth', 'administrator'])
+    ->name('trainer-bookings.mark-paid');
 Route::view('/messages', 'pages.messages')->name('messages.index');
 Route::view('/blogs', 'pages.blogs')->name('blogs.index');
 

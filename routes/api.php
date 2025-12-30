@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PricingController;
 use App\Http\Controllers\Api\SubscriptionController;
+use App\Http\Controllers\Api\TrainerBookingController;
 
 // Login endpoint - rate limiting is handled in LoginRequest class
 // 5 attempts per email+IP combination with 60 second lockout
@@ -70,13 +71,18 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/pricing/annual', [PricingController::class, 'updateAnnual']);
         Route::put('/pricing/trainers/{user}', [PricingController::class, 'updateTrainer']);
 
+         // Trainer booking endpoints
+        Route::get('/trainer-bookings', [TrainerBookingController::class, 'index']);
+        Route::post('/trainer-bookings', [TrainerBookingController::class, 'store']);
+        Route::patch('/trainer-bookings/{booking}/mark-paid', [TrainerBookingController::class, 'markPaid']);
+
         // Subscription management endpoints
         Route::prefix('subscriptions')->group(function () {
-    Route::get('/', [SubscriptionController::class, 'index']);
-    Route::post('/', [SubscriptionController::class, 'store']);
-    Route::get('/options', [SubscriptionController::class, 'options']);
-    Route::post('/{subscription}/hold', [SubscriptionController::class, 'hold']);
-    Route::post('/{subscription}/resume', [SubscriptionController::class, 'resume']);
+        Route::get('/', [SubscriptionController::class, 'index']);
+        Route::post('/', [SubscriptionController::class, 'store']);
+        Route::get('/options', [SubscriptionController::class, 'options']);
+        Route::post('/{subscription}/hold', [SubscriptionController::class, 'hold']);
+        Route::post('/{subscription}/resume', [SubscriptionController::class, 'resume']);
 });
     });
 });

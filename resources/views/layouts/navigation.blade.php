@@ -31,6 +31,11 @@
                         <x-nav-link :href="route('pricing.index')" :active="request()->routeIs('pricing.index')">
                             {{ __('Pricing') }}
                         </x-nav-link>
+
+                        <x-nav-link :href="route('trainer-bookings.index')" :active="request()->routeIs('trainer-bookings.*')">
+                            {{ __('Trainer Bookings') }}
+                        </x-nav-link>
+
                     @endif
                 </div>
             </div>
@@ -103,6 +108,11 @@
                 <x-responsive-nav-link :href="route('pricing.index')" :active="request()->routeIs('pricing.index')">
                     {{ __('Pricing') }}
                 </x-responsive-nav-link>
+
+                <x-responsive-nav-link :href="route('trainer-bookings.index')" :active="request()->routeIs('trainer-bookings.*')">
+                    {{ __('Trainer Bookings') }}
+                </x-responsive-nav-link>
+
             @endif
         </div>
 

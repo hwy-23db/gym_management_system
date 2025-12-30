@@ -15,6 +15,12 @@ use Illuminate\Validation\Rule;
 
 class SubscriptionController extends Controller
 {
+
+    private const ANNUAL_PLAN_MIN_DAYS = 360;
+    private const QUARTERLY_PLAN_MIN_DAYS = 80;
+    private const MONTHLY_PLAN_MIN_DAYS = 28;
+
+
     public function index(Request $request)
     {
         // If you already protect routes with middleware, you can remove this.
@@ -25,15 +31,13 @@ class SubscriptionController extends Controller
             ->get();
 
         $pricingSetting = PricingSetting::query()->first();
-        $monthlyPrice = $pricingSetting?->monthly_subscription_price;
 
         $today = Carbon::today();
 
         return response()->json([
-            'subscriptions' => $subscriptions->map(function (MemberMembership $subscription) use ($monthlyPrice, $today) {
+            'subscriptions' => $subscriptions->map(function (MemberMembership $subscription) use ($pricingSetting, $today) {
                 $durationDays = $subscription->plan?->duration_days ?? 0;
-                $months = $durationDays > 0 ? max(1, (int) ceil($durationDays / 30)) : 0;
-                $price = $monthlyPrice ? $monthlyPrice * $months : null;
+                $price = $this->resolvePlanPrice($durationDays, $pricingSetting);
 
                 $holdDays = 0;
                 $adjustedEndDate = $subscription->end_date;
@@ -65,22 +69,30 @@ class SubscriptionController extends Controller
 
     public function options()
 {
-
         $members = User::query()
             ->where('role', 'user')
             ->orderBy('name')
             ->get(['id', 'name', 'email']);
 
+        $pricingSetting = PricingSetting::query()->first();
         $plans = MembershipPlan::query()
             ->where('is_active', true)
             ->orderBy('duration_days')
-            ->get(['id', 'name', 'duration_days']);
+            ->get(['id', 'name', 'duration_days'])
+            ->map(function (MembershipPlan $plan) use ($pricingSetting) {
+                return [
+                    'id' => $plan->id,
+                    'name' => $plan->name,
+                    'duration_days' => $plan->duration_days,
+                    'price' => $this->resolvePlanPrice($plan->duration_days, $pricingSetting),
+                ];
+            })
+            ->values();
 
         return response()->json([
             'members' => $members,
             'plans' => $plans,
         ]);
-
 }
 
     public function store(Request $request)
@@ -170,5 +182,26 @@ class SubscriptionController extends Controller
         return response()->json([
             'message' => 'Subscription resumed.',
         ]);
+    }
+
+    private function resolvePlanPrice(?int $durationDays, ?PricingSetting $pricingSetting): ?float
+    {
+        if (! $pricingSetting || ! $durationDays) {
+            return null;
+        }
+
+        if ($durationDays >= self::ANNUAL_PLAN_MIN_DAYS) {
+            return (float) $pricingSetting->annual_subscription_price;
+        }
+
+        if ($durationDays >= self::QUARTERLY_PLAN_MIN_DAYS) {
+            return (float) $pricingSetting->quarterly_subscription_price;
+        }
+
+        if ($durationDays >= self::MONTHLY_PLAN_MIN_DAYS) {
+            return (float) $pricingSetting->monthly_subscription_price;
+        }
+
+        return null;
     }
 }

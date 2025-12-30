@@ -218,7 +218,11 @@
 
                 const planOptions = (data.plans || []).map((plan) => {
                     const days = plan.duration_days ? `${plan.duration_days} days` : '';
-                    return `<option value="${plan.id}">${plan.name}${days ? ' - ' + days : ''}</option>`;
+                    const price = plan.price ? formatCurrency(plan.price) : '';
+                    const parts = [plan.name];
+                    if (days) parts.push(days);
+                    if (price) parts.push(price);
+                    return `<option value="${plan.id}">${parts.join(' - ')}</option>`;
                 });
 
                 populateSelect(subscriptionMemberSelect, memberOptions, 'No users found (role: user).');

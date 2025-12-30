@@ -29,7 +29,7 @@
                         @endif
 
                         <x-nav-link :href="route('pricing.index')" :active="request()->routeIs('pricing.index')">
-                            {{ __('Trainer Pricing') }}
+                            {{ __('Pricing') }}
                         </x-nav-link>
                     @endif
                 </div>
@@ -101,7 +101,7 @@
                 @endif
 
                 <x-responsive-nav-link :href="route('pricing.index')" :active="request()->routeIs('pricing.index')">
-                    {{ __('Trainer Pricing') }}
+                    {{ __('Pricing') }}
                 </x-responsive-nav-link>
             @endif
         </div>

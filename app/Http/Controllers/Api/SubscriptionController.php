@@ -30,7 +30,14 @@ class SubscriptionController extends Controller
             ->orderByDesc('id')
             ->get();
 
-        $pricingSetting = PricingSetting::query()->first();
+        $pricingSetting = PricingSetting::query()->firstOrCreate(
+            [],
+            [
+                'monthly_subscription_price' => 80000,
+                'quarterly_subscription_price' => 240000,
+                'annual_subscription_price' => 960000,
+            ]
+        );
 
         $today = Carbon::today();
 
@@ -68,32 +75,28 @@ class SubscriptionController extends Controller
     }
 
     public function options()
-{
+    {
         $members = User::query()
             ->where('role', 'user')
             ->orderBy('name')
             ->get(['id', 'name', 'email']);
 
-        $pricingSetting = PricingSetting::query()->first();
-        $plans = MembershipPlan::query()
-            ->where('is_active', true)
-            ->orderBy('duration_days')
-            ->get(['id', 'name', 'duration_days'])
-            ->map(function (MembershipPlan $plan) use ($pricingSetting) {
-                return [
-                    'id' => $plan->id,
-                    'name' => $plan->name,
-                    'duration_days' => $plan->duration_days,
-                    'price' => $this->resolvePlanPrice($plan->duration_days, $pricingSetting),
-                ];
-            })
-            ->values();
+        $pricingSetting = PricingSetting::query()->firstOrCreate(
+            [],
+            [
+                'monthly_subscription_price' => 80000,
+                'quarterly_subscription_price' => 240000,
+                'annual_subscription_price' => 960000,
+            ]
+        );
+        $plans = $this->syncPricingPlans($pricingSetting);
 
         return response()->json([
             'members' => $members,
             'plans' => $plans,
         ]);
-}
+
+    }
 
     public function store(Request $request)
     {
@@ -203,5 +206,42 @@ class SubscriptionController extends Controller
         }
 
         return null;
+    }
+        private function syncPricingPlans(PricingSetting $pricingSetting): array
+    {
+        $definitions = [
+            [
+                'name' => 'Monthly',
+                'duration_days' => self::MONTHLY_PLAN_MIN_DAYS,
+                'price' => (float) $pricingSetting->monthly_subscription_price,
+            ],
+            [
+                'name' => 'Quarterly',
+                'duration_days' => self::QUARTERLY_PLAN_MIN_DAYS,
+                'price' => (float) $pricingSetting->quarterly_subscription_price,
+            ],
+            [
+                'name' => 'Annual',
+                'duration_days' => self::ANNUAL_PLAN_MIN_DAYS,
+                'price' => (float) $pricingSetting->annual_subscription_price,
+            ],
+        ];
+
+        return collect($definitions)->map(function (array $definition) {
+            $plan = MembershipPlan::query()->updateOrCreate(
+                ['name' => $definition['name']],
+                [
+                    'duration_days' => $definition['duration_days'],
+                    'is_active' => true,
+                ]
+            );
+
+            return [
+                'id' => $plan->id,
+                'name' => $plan->name,
+                'duration_days' => $plan->duration_days,
+                'price' => $definition['price'],
+            ];
+        })->values()->all();
     }
 }

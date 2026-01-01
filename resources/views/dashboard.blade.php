@@ -57,6 +57,55 @@
                 </div>
             </section>
 
+                        <section class="grid gap-6 lg:grid-cols-3">
+                <div class="bg-slate-950/95 dark:bg-gray-900 rounded-2xl shadow-sm p-6 border border-slate-800 lg:col-span-2">
+                    <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                            <h3 class="text-lg font-semibold text-slate-100">Attendance Report</h3>
+                            <p class="text-sm text-slate-400">Daily check-in vs check-out activity</p>
+                        </div>
+                        <div class="flex items-center gap-3 text-xs text-slate-400">
+                            <span class="flex items-center gap-2">
+                                <span class="h-2 w-2 rounded-full bg-sky-400"></span>
+                                Check-ins
+                            </span>
+                            <span class="flex items-center gap-2">
+                                <span class="h-2 w-2 rounded-full bg-amber-400"></span>
+                                Check-outs
+                            </span>
+                        </div>
+                    </div>
+                    <div class="mt-6 h-64 rounded-xl bg-gradient-to-br from-slate-900 via-slate-900/60 to-slate-950 p-4">
+                        <canvas id="attendanceReportChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-slate-900/90 dark:bg-gray-900 rounded-2xl shadow-sm p-6 border border-slate-800">
+                    <h3 class="text-lg font-semibold text-slate-100">Weekly Summary</h3>
+                    <p class="text-sm text-slate-400">Last 7 days overview</p>
+                    <div class="mt-6 space-y-4">
+                        <div class="rounded-xl bg-slate-800/70 p-4">
+                            <p class="text-xs uppercase tracking-wide text-slate-400">Total Check-ins</p>
+                            <p class="mt-2 text-3xl font-semibold text-slate-100">{{ number_format($checkInCounts->sum()) }}</p>
+                        </div>
+                        <div class="rounded-xl bg-slate-800/70 p-4">
+                            <p class="text-xs uppercase tracking-wide text-slate-400">Total Check-outs</p>
+                            <p class="mt-2 text-3xl font-semibold text-slate-100">{{ number_format($checkOutCounts->sum()) }}</p>
+                        </div>
+                        <div class="rounded-xl bg-slate-800/70 p-4">
+                            <p class="text-xs uppercase tracking-wide text-slate-400">Peak Day</p>
+                            @php
+                                $peakIndex = $checkInCounts->keys()->sortByDesc(fn ($index) => $checkInCounts[$index])->first();
+                                $peakLabel = $reportLabels[$peakIndex] ?? '-';
+                                $peakValue = $checkInCounts[$peakIndex] ?? 0;
+                            @endphp
+                            <p class="mt-2 text-lg font-semibold text-slate-100">{{ $peakLabel }}</p>
+                            <p class="text-sm text-slate-400">{{ $peakValue }} check-ins</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+
             <section class="grid gap-6 lg:grid-cols-3">
                 <div class="bg-dark dark:bg-gray-800 rounded-2xl shadow-sm p-6 border border-gray-100 dark:border-gray-700">
                     <div class="flex items-center justify-between">
@@ -133,6 +182,9 @@
         const userCounts = @json($userCounts);
         const subscriptionCounts = @json($subscriptionCounts);
         const trainerBookingCounts = @json($trainerBookingCounts);
+        const reportLabels = @json($reportLabels);
+        const checkInCounts = @json($checkInCounts);
+        const checkOutCounts = @json($checkOutCounts);
 
         const sharedOptions = {
             responsive: true,
@@ -191,7 +243,7 @@
                         fill: true,
                         pointRadius: 4,
                         pointHoverRadius: 6,
-                        pointBackgroundColor: '#ffffff',
+                        pointBackgroundColor: '#e2e8f0',
                         pointBorderColor: borderColor,
                         pointBorderWidth: 2,
                         borderWidth: 3,
@@ -204,6 +256,65 @@
         createLineChart('usersChart', userCounts, 'rgba(59, 130, 246, 1)');
         createLineChart('subscriptionsChart', subscriptionCounts, 'rgba(16, 185, 129, 1)');
         createLineChart('trainerBookingsChart', trainerBookingCounts, 'rgba(249, 115, 22, 1)');
+
+                const reportCtx = document.getElementById('attendanceReportChart').getContext('2d');
+        new Chart(reportCtx, {
+            type: 'bar',
+            data: {
+                labels: reportLabels,
+                datasets: [
+                    {
+                        label: 'Check-ins',
+                        data: checkInCounts,
+                        backgroundColor: 'rgba(56, 189, 248, 0.7)',
+                        borderColor: 'rgba(56, 189, 248, 1)',
+                        borderWidth: 1,
+                        borderRadius: 8,
+                    },
+                    {
+                        label: 'Check-outs',
+                        data: checkOutCounts,
+                        backgroundColor: 'rgba(251, 191, 36, 0.7)',
+                        borderColor: 'rgba(251, 191, 36, 1)',
+                        borderWidth: 1,
+                        borderRadius: 8,
+                    },
+                ],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false,
+                    },
+                },
+                scales: {
+                    x: {
+                        stacked: false,
+                        grid: {
+                            display: false,
+                        },
+                        ticks: {
+                            color: '#94a3b8',
+                            font: {
+                                size: 11,
+                            },
+                        },
+                    },
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: '#94a3b8',
+                            precision: 0,
+                        },
+                        grid: {
+                            color: 'rgba(148, 163, 184, 0.2)',
+                        },
+                    },
+                },
+            },
+        });
     </script>
 </x-app-layout>
 

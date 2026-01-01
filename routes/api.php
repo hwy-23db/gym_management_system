@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BlogController;
 use App\Http\Controllers\Api\PricingController;
@@ -101,6 +102,8 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::post('/scan/qr', [AttendanceController::class, 'scanFromQr']);
             Route::post('/qr/refresh', [AttendanceController::class, 'refreshQr']);
         });
+
+        Route::get('/dashboard/attendance-report', [DashboardController::class, 'attendanceReport']);
 
         Route::get('/messages', [MessageController::class, 'conversations']);
         Route::get('/messages/{user}', [MessageController::class, 'thread']);

@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Route;
 use App\Models\MemberMembership;
 use App\Models\TrainerBooking;
 use App\Models\User;
+use App\Models\AttendanceScan;
 use Carbon\Carbon;
 
 /*
@@ -64,6 +65,23 @@ Route::get('/dashboard', function () {
         $month->copy()->endOfMonth(),
     ])->count());
 
+        $reportDays = collect(range(0, 6))->map(function ($offset) {
+        return Carbon::today()->subDays(6 - $offset);
+    });
+
+    $reportLabels = $reportDays->map(fn ($day) => $day->format('M d'));
+
+    $checkInCounts = $reportDays->map(fn ($day) => AttendanceScan::query()
+        ->whereDate('scanned_at', $day)
+        ->where('action', 'check_in')
+        ->count());
+
+    $checkOutCounts = $reportDays->map(fn ($day) => AttendanceScan::query()
+        ->whereDate('scanned_at', $day)
+        ->where('action', 'check_out')
+        ->count());
+
+
     return view('dashboard', [
         'totalUsers' => User::count(),
         'totalSubscriptions' => MemberMembership::count(),
@@ -72,6 +90,9 @@ Route::get('/dashboard', function () {
         'userCounts' => $userCounts,
         'subscriptionCounts' => $subscriptionCounts,
         'trainerBookingCounts' => $trainerBookingCounts,
+        'reportLabels' => $reportLabels,
+        'checkInCounts' => $checkInCounts,
+        'checkOutCounts' => $checkOutCounts,
         'latestUsers' => User::latest()->take(5)->get(),
         'latestSubscriptions' => MemberMembership::with(['member', 'plan'])
             ->latest('start_date')

@@ -39,9 +39,13 @@
                         <div>
                             <label class="block text-sm font-medium" for="cover_image">Cover Image</label>
                             <input id="cover_image" name="cover_image" type="file" class="mt-1 block w-full text-sm text-gray-700 dark:text-gray-200">
-                            @error('cover_image')
-                                <p class="text-sm text-rose-600 mt-1">{{ $message }}</p>
-                            @enderror
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Image will be resized to 1200x627.</p>
+                            <div class="mt-4 hidden" id="cover-image-preview">
+                                <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Preview</p>
+                                <div class="w-full max-w-3xl aspect-[1200/627] overflow-hidden rounded-md border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+                                    <img alt="Cover image preview" class="h-full w-full object-cover" id="cover-image-preview-img">
+                                </div>
+                            </div>
                         </div>
 
                         <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-6">
@@ -71,4 +75,28 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const input = document.getElementById('cover_image');
+            const preview = document.getElementById('cover-image-preview');
+            const previewImage = document.getElementById('cover-image-preview-img');
+
+            if (!input || !preview || !previewImage) {
+                return;
+            }
+
+            input.addEventListener('change', () => {
+                const [file] = input.files ?? [];
+                if (!file) {
+                    preview.classList.add('hidden');
+                    previewImage.removeAttribute('src');
+                    return;
+                }
+
+                previewImage.src = URL.createObjectURL(file);
+                preview.classList.remove('hidden');
+            });
+        });
+    </script>
 </x-app-layout>

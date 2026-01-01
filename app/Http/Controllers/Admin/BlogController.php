@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\ImageManager;
 
 class BlogController extends Controller
 {
@@ -30,7 +32,7 @@ class BlogController extends Controller
         $validated['slug'] = $this->generateUniqueSlug($validated['title']);
 
         if ($request->hasFile('cover_image')) {
-            $validated['cover_image_path'] = $request->file('cover_image')->store('blogs', 'public');
+            $validated['cover_image_path'] = $this->storeCoverImage($request->file('cover_image'));
         }
 
         $validated = $this->syncPublishDates($validated);
@@ -59,8 +61,7 @@ class BlogController extends Controller
                 Storage::disk('public')->delete($blog->cover_image_path);
             }
 
-            $validated['cover_image_path'] = $request->file('cover_image')->store('blogs', 'public');
-        }
+            $validated['cover_image_path'] = $this->storeCoverImage($request->file('cover_image'));        }
 
         $validated = $this->syncPublishDates($validated, $blog->published_at);
 
@@ -128,5 +129,20 @@ class BlogController extends Controller
         }
 
         return $slug;
+    }
+
+     private function storeCoverImage(\Illuminate\Http\UploadedFile $file): string
+    {
+        $path = $file->hashName('blogs');
+        Storage::disk('public')->makeDirectory('blogs');
+        $fullPath = Storage::disk('public')->path($path);
+        $manager = new ImageManager(new Driver());
+
+        $manager
+            ->read($file->getPathname())
+            ->cover(1200, 627)
+            ->save($fullPath);
+
+        return $path;
     }
 }

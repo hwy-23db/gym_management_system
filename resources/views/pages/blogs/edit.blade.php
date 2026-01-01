@@ -48,7 +48,7 @@
                             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Image will be resized to 1200x627.</p>
                             <div class="mt-4 {{ $post->cover_image_path ? '' : 'hidden' }}" id="cover-image-preview">
                                 <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">Preview</p>
-                                <div class="w-full max-w-3xl aspect-[1200/627] overflow-hidden rounded-md border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+                                <div class="w-full max-w-xl aspect-[1200/627] overflow-hidden rounded-md border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
                                     <img
                                         alt="Cover image preview"
                                         class="h-full w-full object-cover"

@@ -24,7 +24,7 @@ class SecurityHeadersMiddleware
             "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://fonts.bunny.net", // unsafe-inline/eval needed for Vite in dev
             "style-src 'self' 'unsafe-inline' https://fonts.bunny.net",
             "font-src 'self' https://fonts.bunny.net data:",
-            "img-src 'self' data: https:",
+            "img-src 'self' data: blob: https:",
             "connect-src 'self' http://localhost:5173 http://127.0.0.1:5173 https://www.nationalcancercenter.click " . config('app.url'),
             "frame-ancestors 'none'", // Prevent embedding in iframes
             "base-uri 'self'",

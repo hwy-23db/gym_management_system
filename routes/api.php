@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\PricingController;
 use App\Http\Controllers\Api\SubscriptionController;
 use App\Http\Controllers\Api\TrainerBookingController;
 use App\Http\Controllers\Api\AttendanceController;
+use App\Http\Controllers\Api\MessageController;
 
 // Login endpoint - rate limiting is handled in LoginRequest class
 // 5 attempts per email+IP combination with 60 second lockout
@@ -91,7 +92,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/{subscription}/resume', [SubscriptionController::class, 'resume']);
         });
 
-    Route::prefix('attendance')->group(function () {
+        Route::prefix('attendance')->group(function () {
             Route::get('/users', [AttendanceController::class, 'users']);
             Route::get('/qr', [AttendanceController::class, 'qr']);
             Route::get('/records', [AttendanceController::class, 'records']);
@@ -100,5 +101,9 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::post('/scan/qr', [AttendanceController::class, 'scanFromQr']);
             Route::post('/qr/refresh', [AttendanceController::class, 'refreshQr']);
         });
+
+        Route::get('/messages', [MessageController::class, 'conversations']);
+        Route::get('/messages/{user}', [MessageController::class, 'thread']);
+        Route::post('/messages/{user}', [MessageController::class, 'store']);
     });
 });

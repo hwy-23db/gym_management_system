@@ -40,6 +40,10 @@
                             {{ __('Attendance') }}
                         </x-nav-link>
 
+                        <x-nav-link :href="route('messages.index')" :active="request()->routeIs('messages.index')">
+                            {{ __('Messages') }}
+                        </x-nav-link>
+
                         <x-nav-link :href="route('blogs.index')" :active="request()->routeIs('blogs.*')">
                             {{ __('Blogs') }}
                         </x-nav-link>
@@ -123,6 +127,10 @@
 
                 <x-responsive-nav-link :href="route('attendance.index')" :active="request()->routeIs('attendance.index')">
                     {{ __('Attendance') }}
+                </x-responsive-nav-link>
+
+                <x-responsive-nav-link :href="route('messages.index')" :active="request()->routeIs('messages.index')">
+                    {{ __('Messages') }}
                 </x-responsive-nav-link>
 
                  <x-responsive-nav-link :href="route('blogs.index')" :active="request()->routeIs('blogs.*')">

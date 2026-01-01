@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\BlogController;
 use App\Http\Controllers\Admin\PricingController;
 use App\Http\Controllers\Admin\AttendanceController;
+use App\Http\Controllers\Admin\MessageController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Api\SubscriptionController;
 use App\Http\Controllers\Admin\TrainerBookingController;
@@ -136,7 +137,9 @@ Route::patch('/trainer-bookings/{booking}/mark-paid', [TrainerBookingController:
     ->middleware(['auth', 'administrator'])
     ->name('trainer-bookings.mark-paid');
 
-Route::view('/messages', 'pages.messages')->name('messages.index');
+Route::view('/messages', 'pages.messages')
+    ->middleware(['auth', 'administrator'])
+    ->name('messages.index');
 
 Route::get('/blogs', [BlogController::class, 'index'])
     ->middleware(['auth', 'administrator'])
@@ -201,6 +204,10 @@ Route::middleware(['auth', 'administrator'])->prefix('admin')->name('admin.')->g
         Route::post('/{subscription}/hold', [SubscriptionController::class, 'hold'])->name('hold');
         Route::post('/{subscription}/resume', [SubscriptionController::class, 'resume'])->name('resume');
     });
+
+    Route::get('/messages', [MessageController::class, 'conversations'])->name('messages.conversations');
+    Route::get('/messages/{user}', [MessageController::class, 'thread'])->name('messages.thread');
+    Route::post('/messages/{user}', [MessageController::class, 'store'])->name('messages.store');
 });
 
 

@@ -21,11 +21,12 @@ class SecurityHeadersMiddleware
         // Allow same origin, frontend at localhost:5173, and common CDNs
         $csp = [
             "default-src 'self'",
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://fonts.bunny.net", // unsafe-inline/eval needed for Vite in dev
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://fonts.bunny.net https://cdn.jsdelivr.net", // unsafe-inline/eval needed for Vite in dev
             "style-src 'self' 'unsafe-inline' https://fonts.bunny.net",
             "font-src 'self' https://fonts.bunny.net data:",
             "img-src 'self' data: blob: https:",
             "connect-src 'self' http://localhost:5173 http://127.0.0.1:5173 https://www.nationalcancercenter.click " . config('app.url'),
+            "worker-src 'self' blob: https://cdn.jsdelivr.net",
             "frame-ancestors 'none'", // Prevent embedding in iframes
             "base-uri 'self'",
             "form-action 'self'",
@@ -49,7 +50,7 @@ class SecurityHeadersMiddleware
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
 
         // Permissions-Policy: Control browser features
-        $response->headers->set('Permissions-Policy', 'geolocation=(), microphone=(), camera=(), payment=()');
+        $response->headers->set('Permissions-Policy', 'geolocation=(), microphone=(), camera=(self), payment=()');
 
         // Strict-Transport-Security (HSTS) - only set in production with HTTPS
         if (config('app.env') === 'production' && $request->secure()) {

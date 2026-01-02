@@ -6,62 +6,206 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+        <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 space-y-3 text-gray-900 dark:text-gray-100">
-                    <h3 class="text-lg font-semibold">Scan the gym QR code</h3>
-                    <p class="text-sm text-gray-600 dark:text-gray-300">
-                        When you arrive, scan the trainer QR code displayed at the gym to record your check-in.
-                        Scan it again when you leave to record your check-out.
-                    </p>
-                    @if($latestScan)
-                        <div class="mt-4 flex flex-col gap-1 text-sm text-gray-700 dark:text-gray-200">
-                            <span>
-                                Latest action: <strong class="uppercase">{{ str_replace('_', ' ', $latestScan->action) }}</strong>
-                            </span>
-                            <span>Time: {{ $latestScan->scanned_at->format('M d, Y h:i A') }}</span>
-                        </div>
-                    @else
-                        <p class="text-sm text-gray-500 dark:text-gray-400">
-                            No scans recorded yet.
-                        </p>
-                    @endif
-                </div>
-            </div>
 
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
-                    <h3 class="text-lg font-semibold">Recent scans</h3>
-                    <div class="mt-4 overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
-                            <thead class="bg-gray-50 dark:bg-gray-900">
-                                <tr>
-                                    <th class="px-4 py-2 text-left font-semibold">Action</th>
-                                    <th class="px-4 py-2 text-left font-semibold">Time</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                                @forelse($recentScans as $scan)
-                                    <tr>
-                                        <td class="px-4 py-3 text-gray-700 dark:text-gray-200">
-                                            {{ ucwords(str_replace('_', ' ', $scan->action)) }}
-                                        </td>
-                                        <td class="px-4 py-3 text-gray-600 dark:text-gray-300">
-                                            {{ $scan->scanned_at->format('M d, Y h:i A') }}
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="2" class="px-4 py-3 text-center text-gray-500 dark:text-gray-400">
-                                            No scans yet.
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
+                <div class="p-6 space-y-5 text-gray-900 dark:text-gray-100">
+                    <div class="rounded-md bg-gray-700 px-4 py-3 text-white">
+                        <h3 class="flex items-center gap-2 text-sm font-semibold">
+                            📍 Check-in / Check-out
+                        </h3>
+                    </div>
+
+                    @php
+                        $isCheckedIn = $latestScan && $latestScan->action === 'check_in';
+                    @endphp
+                    <div class="rounded-md px-4 py-3 text-sm font-semibold {{ $isCheckedIn ? 'border border-emerald-100 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300' : 'border border-red-100 bg-red-50 text-red-700 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-300' }}">
+                        <span class="inline-flex items-center gap-2">
+                            <span class="inline-flex h-5 w-5 items-center justify-center rounded-full text-xs text-white {{ $isCheckedIn ? 'bg-emerald-600' : 'bg-red-600' }}">
+                                {{ $isCheckedIn ? '✓' : '×' }}
+                            </span>
+                            {{ $isCheckedIn ? 'Currently Checked In' : 'Currently Checked Out' }}
+                        </span>
+                    </div>
+
+                    <button
+                        type="button"
+                        id="trainer-scan-button"
+                        class="inline-flex w-full items-center justify-center rounded-md bg-gray-700 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-gray-600"
+                    >
+                        📷 Scan QR Code
+                    </button>
+
+                    <p id="trainer-scan-status" class="text-sm text-gray-500 dark:text-gray-400"></p>
+
+                    <div
+                        id="trainer-scan-panel"
+                        class="hidden w-full overflow-hidden rounded-lg border border-dashed border-gray-300 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-900"
+                    >
+                        <div class="relative w-full overflow-hidden rounded-md bg-black">
+                            <video
+                                id="trainer-scan-video"
+                                class="h-64 w-full object-cover sm:h-72"
+                                playsinline
+                            ></video>
+                        </div>
+
+                        <div class="mt-3 flex items-center justify-between">
+                            <span class="text-xs text-gray-500 dark:text-gray-400">Align the QR code inside the frame.</span>
+                            <button
+                                type="button"
+                                id="trainer-scan-stop"
+                                class="text-xs font-semibold text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+                            >
+                                Stop
+                            </button>
+                        </div>
+                    </div>
+
+
+                    <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+                        <input
+                            id="trainer-qr-input"
+                            type="text"
+                            placeholder="Paste trainer QR link"
+                            class="w-full rounded-md border-gray-300 px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+                        >
+                        <button
+                            type="button"
+                            id="trainer-qr-submit"
+                            class="inline-flex w-full items-center justify-center rounded-md border border-emerald-600 px-4 py-2 text-sm font-semibold text-emerald-600 shadow-sm transition hover:bg-emerald-50 dark:border-emerald-400 dark:text-emerald-300 dark:hover:bg-emerald-900/40 sm:w-auto"
+                        >
+                            Open QR Link
+                        </button>
+                    </div>
+
+                    <div class="space-y-2">
+                        <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-200">Recent Activity:</h4>
+                        @if($recentScans->isEmpty())
+                            <p class="text-sm text-gray-500 dark:text-gray-400">No check-in/out history yet.</p>
+                        @else
+                            <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-300">
+                                @foreach($recentScans as $scan)
+                                    <li class="flex items-center justify-between">
+                                        <span>{{ ucwords(str_replace('_', ' ', $scan->action)) }}</span>
+                                        <span>{{ $scan->scanned_at->format('M d, Y h:i A') }}</span>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @endif
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <script type="module">
+        (function () {
+            const scanButton = document.getElementById('trainer-scan-button');
+            const scanPanel = document.getElementById('trainer-scan-panel');
+            const scanVideo = document.getElementById('trainer-scan-video');
+            const scanStop = document.getElementById('trainer-scan-stop');
+            const scanStatus = document.getElementById('trainer-scan-status');
+            const manualInput = document.getElementById('trainer-qr-input');
+            const manualSubmit = document.getElementById('trainer-qr-submit');
+            let stream = null;
+            let scanTimer = null;
+            let qrScanner = null;
+
+            function setStatus(message, type = 'info') {
+                const classes = {
+                    info: 'text-gray-500 dark:text-gray-400',
+                    success: 'text-emerald-600 dark:text-emerald-400',
+                    error: 'text-rose-600 dark:text-rose-400',
+                };
+                scanStatus.className = `text-sm ${classes[type] || classes.info}`;
+                scanStatus.textContent = message;
+            }
+
+            function stopScan() {
+                if (scanTimer) {
+                    clearInterval(scanTimer);
+                    scanTimer = null;
+                }
+                if (qrScanner) {
+                    qrScanner.stop();
+                    qrScanner.destroy();
+                    qrScanner = null;
+                }
+                if (stream) {
+                    stream.getTracks().forEach((track) => track.stop());
+                    stream = null;
+                }
+                scanVideo.srcObject = null;
+                scanPanel.classList.add('hidden');
+            }
+
+            async function startScan() {
+                try {
+                    setStatus('Starting camera...', 'info');
+                    stream = await navigator.mediaDevices.getUserMedia({
+                        video: { facingMode: 'environment' },
+                        audio: false,
+                    });
+                    scanVideo.srcObject = stream;
+                    await scanVideo.play();
+                    scanPanel.classList.remove('hidden');
+                    setStatus('Scanning for QR code...', 'info');
+
+                    if ('BarcodeDetector' in window) {
+                        const detector = new BarcodeDetector({ formats: ['qr_code'] });
+                        scanTimer = setInterval(async () => {
+                            if (!scanVideo || scanVideo.readyState < 2) {
+                                return;
+                            }
+                            const codes = await detector.detect(scanVideo);
+                            if (codes.length > 0) {
+                                const value = codes[0].rawValue;
+                                stopScan();
+                                setStatus('QR code detected. Redirecting...', 'success');
+                                window.location.href = value;
+                            }
+                        }, 500);
+                        return;
+                    }
+
+                    const module = await import('https://cdn.jsdelivr.net/npm/qr-scanner@1.4.2/qr-scanner.min.js');
+                    const QrScanner = module.default;
+                    QrScanner.WORKER_PATH = 'https://cdn.jsdelivr.net/npm/qr-scanner@1.4.2/qr-scanner-worker.min.js';
+
+                    qrScanner = new QrScanner(
+                        scanVideo,
+                        (result) => {
+                            stopScan();
+                            setStatus('QR code detected. Redirecting...', 'success');
+                            window.location.href = result.data ?? result;
+                        },
+                        { returnDetailedScanResult: true }
+                    );
+
+                    await qrScanner.start();
+                } catch (error) {
+                    stopScan();
+                    setStatus('Unable to access camera. Paste the QR link instead.', 'error');
+                }
+            }
+
+            scanButton.addEventListener('click', startScan);
+            scanStop.addEventListener('click', () => {
+                stopScan();
+                setStatus('Scan stopped.', 'info');
+            });
+            manualSubmit.addEventListener('click', () => {
+                const value = manualInput.value.trim();
+                if (!value) {
+                    setStatus('Paste the trainer QR link first.', 'error');
+                    return;
+                }
+                setStatus('Opening QR link...', 'success');
+                window.location.href = value;
+            });
+
+            window.addEventListener('beforeunload', stopScan);
+        })();
+    </script>
 </x-app-layout>

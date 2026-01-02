@@ -20,6 +20,13 @@
                 @forelse($posts as $post)
                     <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                         <div class="p-6 space-y-3 text-gray-900 dark:text-gray-100">
+                            @if($post->cover_image_path)
+                                <img
+                                    src="{{ asset('storage/' . $post->cover_image_path) }}"
+                                    alt="{{ $post->title }} cover image"
+                                    class="h-40 w-full rounded-lg object-cover"
+                                >
+                            @endif
                             <div class="flex items-center justify-between">
                                 <h4 class="text-lg font-semibold">{{ $post->title }}</h4>
                                 <span class="text-xs text-gray-500 dark:text-gray-400">

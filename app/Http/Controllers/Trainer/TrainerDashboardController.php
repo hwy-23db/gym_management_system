@@ -11,6 +11,8 @@ use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 
 class TrainerDashboardController extends Controller
 {
@@ -42,6 +44,7 @@ class TrainerDashboardController extends Controller
         return view('trainer.check-in', [
             'recentScans' => $recentScans,
             'latestScan' => $latestScan,
+            'trainerQrUrl' => $this->qrUrl('trainer'),
         ]);
     }
 
@@ -120,5 +123,24 @@ class TrainerDashboardController extends Controller
         return User::query()
             ->where('role', 'administrator')
             ->first();
+    }
+
+    private function qrUrl(string $type): string
+    {
+        $token = $this->getQrToken($type);
+
+        return url('/attendance/scan?type=' . $type . '&token=' . $token);
+    }
+
+    private function getQrToken(string $type): string
+    {
+        $key = $this->qrTokenKey($type);
+
+        return Cache::rememberForever($key, fn () => Str::random(40));
+    }
+
+    private function qrTokenKey(string $type): string
+    {
+        return 'attendance_qr_token_' . $type;
     }
 }

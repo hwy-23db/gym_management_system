@@ -30,13 +30,22 @@
                                 </span>
                             </div>
 
-                            <button
-                                type="button",
-                                id="trainer-scan-button",
-                                class="inline-flex w-full items-center justify-center rounded-md bg-gray-700 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-gray-600",
-                            >
-                                📷 Scan QR Code
-                            </button>
+                            <div class="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div>
+                                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Option 1</p>
+                                        <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Scan QR with camera</p>
+                                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Use your device camera to scan the trainer QR code.</p>
+                                    </div>
+                                </div>
+                                <button
+                                    type="button"
+                                    id="trainer-scan-button"
+                                    class="mt-3 inline-flex w-full items-center justify-center rounded-md bg-gray-700 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-gray-600"
+                                >
+                                    📷 Scan QR Code
+                                </button>
+                            </div>
 
                             <p id="trainer-scan-status" class="text-sm text-gray-500 dark:text-gray-400"></p>
 
@@ -65,20 +74,25 @@
                             </div>
 
 
-                            <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
-                                <input
-                                    id="trainer-qr-input"
-                                    type="text"
-                                    placeholder="Paste trainer QR link"
-                                    class="w-full rounded-md border-gray-300 px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
-                                >
-                                <button
-                                    type="button"
-                                    id="trainer-qr-submit"
-                                    class="inline-flex w-full items-center justify-center rounded-md border border-emerald-600 px-4 py-2 text-sm font-semibold text-emerald-600 shadow-sm transition hover:bg-emerald-50 dark:border-emerald-400 dark:text-emerald-300 dark:hover:bg-emerald-900/40 sm:w-auto"
-                                >
-                                    Open QR Link
-                                </button>
+                            <div class="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900">
+                                <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Option 2</p>
+                                <p class="text-sm font-semibold text-gray-800 dark:text-gray-100">Paste the QR link</p>
+                                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Use this when the camera is unavailable. Submit once to check in and again to check out.</p>
+                                <div class="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
+                                    <input
+                                        id="trainer-qr-input"
+                                        type="text"
+                                        placeholder="Paste trainer QR link"
+                                        class="w-full rounded-md border-gray-300 px-3 py-2 text-sm text-gray-900 shadow-sm focus:border-emerald-500 focus:ring-emerald-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+                                    >
+                                    <button
+                                        type="button"
+                                        id="trainer-qr-submit"
+                                        class="inline-flex w-full items-center justify-center rounded-md border border-emerald-600 px-4 py-2 text-sm font-semibold text-emerald-600 shadow-sm transition hover:bg-emerald-50 dark:border-emerald-400 dark:text-emerald-300 dark:hover:bg-emerald-900/40 sm:w-auto"
+                                    >
+                                        Record from Link
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -221,7 +235,6 @@
                                 stopScan();
                                 setStatus('QR code detected. Recording...', 'success');
                                 await submitScan(value);
-                                window.location.href = value;
                             }
                         }, 500);
                         return;
@@ -237,7 +250,6 @@
                             stopScan();
                             setStatus('QR code detected. Recording...', 'success');
                             await submitScan(result.data ?? result);
-                            window.location.href = result.data ?? result;
                         },
                         { returnDetailedScanResult: true }
                     );
@@ -264,7 +276,6 @@
                     return;
                 }
                 submitScan(value);
-                window.location.href = value;
             });
 
             window.addEventListener('beforeunload', stopScan);

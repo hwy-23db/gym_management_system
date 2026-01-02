@@ -41,7 +41,7 @@ class TrainerDashboardController extends Controller
 
         $latestScan = $recentScans->first();
 
-        return view('trainer.check-in', [
+        return view('trainer.checkin', [
             'recentScans' => $recentScans,
             'latestScan' => $latestScan,
             'trainerQrUrl' => $this->qrUrl('trainer'),

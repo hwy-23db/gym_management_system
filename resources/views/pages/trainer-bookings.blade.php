@@ -44,7 +44,9 @@
                                 <tr>
                                     <th class="px-4 py-2 text-left font-semibold">ID</th>
                                     <th class="px-4 py-2 text-left font-semibold">User</th>
+                                    <th class="px-4 py-2 text-left font-semibold">User Phone</th>
                                     <th class="px-4 py-2 text-left font-semibold">Trainer</th>
+                                    <th class="px-4 py-2 text-left font-semibold">Trainer Phone</th>
                                     <th class="px-4 py-2 text-left font-semibold">Session Time</th>
                                     <th class="px-4 py-2 text-left font-semibold">Paid Time</th>
                                     <th class="px-4 py-2 text-left font-semibold">Sessions</th>
@@ -61,7 +63,13 @@
                                         <td class="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">
                                             {{ $booking->member?->name ?? 'Unknown' }}
                                         </td>
+                                        <td class="px-4 py-3">
+                                            {{ $booking->member?->phone ?? '-' }}
+                                        </td>
                                         <td class="px-4 py-3">{{ $booking->trainer?->name ?? 'Unknown' }}</td>
+                                        <td class="px-4 py-3">
+                                            {{ $booking->trainer?->phone ?? '-' }}
+                                        </td>
                                         <td class="px-4 py-3">
                                             {{ optional($booking->session_datetime)->format('Y-m-d H:i:s') ?? '-' }}
                                         </td>
@@ -111,7 +119,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="9" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">
+                                        <td colspan="11" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">
                                             No trainer bookings found.
                                         </td>
                                     </tr>

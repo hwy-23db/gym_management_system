@@ -62,6 +62,7 @@ class SubscriptionController extends Controller
                 return [
                     'id' => $subscription->id,
                     'member_name' => $subscription->member?->name ?? 'Unknown',
+                    'member_phone' => $subscription->member?->phone,
                     'plan_name' => $subscription->plan?->name ?? 'Plan',
                     'duration_days' => $durationDays,
                     'price' => $price,
@@ -79,7 +80,7 @@ class SubscriptionController extends Controller
         $members = User::query()
             ->where('role', 'user')
             ->orderBy('name')
-            ->get(['id', 'name', 'email']);
+            ->get(['id', 'name', 'email', 'phone']);
 
         $pricingSetting = PricingSetting::query()->firstOrCreate(
             [],

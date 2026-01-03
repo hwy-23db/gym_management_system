@@ -32,6 +32,7 @@
                                     <th class="px-4 py-2 text-left font-semibold">ID</th>
                                     <th class="px-4 py-2 text-left font-semibold">Name</th>
                                     <th class="px-4 py-2 text-left font-semibold">Email</th>
+                                    <th class="px-4 py-2 text-left font-semibold">Phone</th>
                                     <th class="px-4 py-2 text-left font-semibold">Role</th>
                                     <th class="px-4 py-2 text-left font-semibold">Status</th>
                                     <th class="px-4 py-2 text-left font-semibold">Actions</th>
@@ -39,7 +40,7 @@
                             </thead>
                             <tbody id="users-table" class="divide-y divide-gray-200 dark:divide-gray-700">
                                 <tr>
-                                    <td colspan="6" class="px-4 py-3 text-center text-gray-500 dark:text-gray-400">No users loaded.</td>
+                                    <td colspan="7" class="px-4 py-3 text-center text-gray-500 dark:text-gray-400">No users loaded.</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -75,6 +76,10 @@
                         <div>
                             <label class="block text-sm font-medium" for="create-email">Email</label>
                             <input id="create-email" type="email" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium" for="create-phone">Phone</label>
+                            <input id="create-phone" type="text" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100">
                         </div>
                         <div>
                             <label class="block text-sm font-medium" for="create-password">Password</label>
@@ -114,6 +119,10 @@
                             <input id="update-email" type="email" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100">
                         </div>
                         <div>
+                            <label class="block text-sm font-medium" for="update-phone">Phone</label>
+                            <input id="update-phone" type="text" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100">
+                        </div>
+                        <div>
                             <label class="block text-sm font-medium" for="update-password">Password</label>
                             <input id="update-password" type="password" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100" placeholder="Leave blank to keep current">
                         </div>
@@ -141,6 +150,7 @@
         const updateUserId = document.getElementById('update-user-id');
         const updateName = document.getElementById('update-name');
         const updateEmail = document.getElementById('update-email');
+        const updatePhone = document.getElementById('update-phone');
         const updatePassword = document.getElementById('update-password');
         const updateRole = document.getElementById('update-role');
         const createPanel = document.getElementById('create-user-panel');
@@ -189,7 +199,7 @@
 
         const renderUsers = (users) => {
             if (!users.length) {
-                usersTable.innerHTML = '<tr><td colspan="6" class="px-4 py-3 text-center text-gray-500 dark:text-gray-400">No users found.</td></tr>';
+                usersTable.innerHTML = '<tr><td colspan="7" class="px-4 py-3 text-center text-gray-500 dark:text-gray-400">No users found.</td></tr>';
                 return;
             }
 
@@ -198,7 +208,7 @@
                 const actions = user.deleted_at
                     ? `<button data-id="${user.id}" class="restore-user inline-flex items-center px-3 py-1 bg-emerald-600 text-white rounded-md text-xs">Restore</button>`
                     : `<div class="flex gap-2">
-                        <button data-id="${user.id}" class="edit-user inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded-md text-xs">Edit</button>
+                        <button data-id="${user.id}" data-phone="${user.phone || ''}" class="edit-user inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded-md text-xs">Edit</button>
                         <button data-id="${user.id}" class="delete-user inline-flex items-center px-3 py-1 bg-rose-600 text-white rounded-md text-xs">Delete</button>
                     </div>`;
 
@@ -207,6 +217,7 @@
                         <td class="px-4 py-2">${user.id}</td>
                         <td class="px-4 py-2">${user.name}</td>
                         <td class="px-4 py-2">${user.email}</td>
+                        td class="px-4 py-2">${user.phone || '-'}</td>
                         <td class="px-4 py-2">${user.role}</td>
                         <td class="px-4 py-2">${status}</td>
                         <td class="px-4 py-2">${actions}</td>
@@ -239,7 +250,8 @@
                     updateUserId.value = button.dataset.id;
                     updateName.value = row.children[1].textContent.trim();
                     updateEmail.value = row.children[2].textContent.trim();
-                    updateRole.value = row.children[3].textContent.trim();
+                    updatePhone.value = button.dataset.phone || '';
+                    updateRole.value = row.children[4].textContent.trim();
                     updatePassword.value = '';
                     openPanel(editPanel);
                 });
@@ -262,6 +274,7 @@
             const payload = {
                 name: document.getElementById('create-name').value.trim(),
                 email: document.getElementById('create-email').value.trim(),
+                phone: document.getElementById('create-phone').value.trim(),
                 password: document.getElementById('create-password').value,
                 role: document.getElementById('create-role').value,
             };
@@ -288,11 +301,13 @@
             const payload = {};
             const name = updateName.value.trim();
             const email = updateEmail.value.trim();
+            const phone = updatePhone.value.trim();
             const password = updatePassword.value;
             const role = updateRole.value;
 
             if (name) payload.name = name;
             if (email) payload.email = email;
+            if (phone) payload.phone = phone;
             if (password) payload.password = password;
             if (role) payload.role = role;
 

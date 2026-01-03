@@ -42,6 +42,7 @@
                                 <tr>
                                     <th class="px-4 py-3 text-left font-semibold">ID</th>
                                     <th class="px-4 py-3 text-left font-semibold">Member</th>
+                                    <th class="px-4 py-3 text-left font-semibold">Member Phone</th>
                                     <th class="px-4 py-3 text-left font-semibold">Plan</th>
                                     <th class="px-4 py-3 text-left font-semibold">Details</th>
                                     <th class="px-4 py-3 text-left font-semibold">Price</th>
@@ -53,7 +54,7 @@
                             </thead>
                             <tbody id="subscriptions-table" class="divide-y divide-gray-200 dark:divide-gray-700">
                                 <tr>
-                                    <td colspan="9" class="px-4 py-4 text-center text-gray-500 dark:text-gray-400">No subscriptions loaded.</td>
+                                    <td colspan="10" class="px-4 py-4 text-center text-gray-500 dark:text-gray-400">No subscriptions loaded.</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -213,7 +214,8 @@
 
                 const memberOptions = (data.members || []).map((u) => {
                     const email = u.email ? ` (${u.email})` : '';
-                    return `<option value="${u.id}">${u.name}${email}</option>`;
+                    const phone = u.phone ? ` - ${u.phone}` : '';
+                    return `<option value="${u.id}">${u.name}${email}${phone}</option>`;
                 });
 
                 const planOptions = (data.plans || []).map((plan) => {
@@ -272,7 +274,7 @@
         const renderSubscriptions = (subscriptions) => {
             if (!subscriptions.length) {
                 subscriptionsTable.innerHTML =
-                    '<tr><td colspan="9" class="px-4 py-4 text-center text-gray-500 dark:text-gray-400">No subscriptions found.</td></tr>';
+                    '<tr><td colspan="10" class="px-4 py-4 text-center text-gray-500 dark:text-gray-400">No subscriptions found.</td></tr>';
                 return;
             }
 
@@ -287,6 +289,7 @@
                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-900/50 transition">
                         <td class="px-4 py-3">${s.id}</td>
                         <td class="px-4 py-3">${s.member_name}</td>
+                        <td class="px-4 py-3">${s.member_phone || '-'}</td>
                         <td class="px-4 py-3">
                             <span class="inline-flex items-center px-2 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-semibold">
                                 ${s.plan_name}

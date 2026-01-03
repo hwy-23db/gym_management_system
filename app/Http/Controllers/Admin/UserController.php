@@ -25,7 +25,7 @@ class UserController extends Controller
     public function deleted()
     {
         $users = User::onlyTrashed()
-            ->select('id', 'name', 'email', 'role', 'email_verified_at', 'created_at', 'updated_at', 'deleted_at')
+            ->select('id', 'name', 'email','phone', 'role', 'email_verified_at', 'created_at', 'updated_at', 'deleted_at')
             ->orderByDesc('deleted_at')
             ->get();
 

@@ -78,6 +78,7 @@ class TrainerBookingController extends Controller
             'total_price' => $pricePerSession * $sessionsCount,
             'status' => $validated['status'],
             'paid_status' => $validated['paid_status'],
+            'paid_at' => $validated['paid_status'] === 'paid' ? now() : null,
             'notes' => $validated['notes'],
         ]);
 
@@ -87,7 +88,10 @@ class TrainerBookingController extends Controller
     public function markPaid(TrainerBooking $booking): RedirectResponse
     {
         if ($booking->paid_status !== 'paid') {
-            $booking->update(['paid_status' => 'paid']);
+                $booking->update([
+                'paid_status' => 'paid',
+                'paid_at' => now(),
+            ]);
         }
 
         return back()->with('status', 'Booking marked as paid.');

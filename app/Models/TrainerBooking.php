@@ -17,11 +17,13 @@ class TrainerBooking extends Model
         'total_price',
         'status',
         'paid_status',
+        'paid_at',
         'notes',
     ];
 
     protected $casts = [
         'session_datetime' => 'datetime',
+        'paid_at' => 'datetime',
     ];
 
     public function member(): BelongsTo

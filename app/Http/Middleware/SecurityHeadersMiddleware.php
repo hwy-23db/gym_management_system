@@ -21,7 +21,7 @@ class SecurityHeadersMiddleware
         // Allow same origin, frontend at localhost:5173, and common CDNs
         $csp = [
             "default-src 'self'",
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://fonts.bunny.net https://cdn.jsdelivr.net", // unsafe-inline/eval needed for Vite in dev
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://fonts.bunny.net https://cdn.jsdelivr.net https://unpkg.com", // unsafe-inline/eval needed for Vite in dev
             "style-src 'self' 'unsafe-inline' https://fonts.bunny.net",
             "font-src 'self' https://fonts.bunny.net data:",
             "img-src 'self' data: blob: https:",

@@ -45,7 +45,8 @@
                                     <th class="px-4 py-2 text-left font-semibold">ID</th>
                                     <th class="px-4 py-2 text-left font-semibold">User</th>
                                     <th class="px-4 py-2 text-left font-semibold">Trainer</th>
-                                    <th class="px-4 py-2 text-left font-semibold">Date/Time</th>
+                                    <th class="px-4 py-2 text-left font-semibold">Session Time</th>
+                                    <th class="px-4 py-2 text-left font-semibold">Paid Time</th>
                                     <th class="px-4 py-2 text-left font-semibold">Sessions</th>
                                     <th class="px-4 py-2 text-left font-semibold">Total</th>
                                     <th class="px-4 py-2 text-left font-semibold">Status</th>
@@ -63,6 +64,9 @@
                                         <td class="px-4 py-3">{{ $booking->trainer?->name ?? 'Unknown' }}</td>
                                         <td class="px-4 py-3">
                                             {{ optional($booking->session_datetime)->format('Y-m-d H:i:s') ?? '-' }}
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            {{ optional($booking->paid_at)->format('Y-m-d H:i:s') ?? '-' }}
                                         </td>
                                         <td class="px-4 py-3">{{ $booking->sessions_count }}</td>
                                         <td class="px-4 py-3">{{ number_format($booking->total_price, 2) }} MMK</td>

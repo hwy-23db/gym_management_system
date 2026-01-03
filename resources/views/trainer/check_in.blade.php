@@ -70,8 +70,8 @@
                                 </p>
                             </div>
                             <div id="camera-status" class="text-sm text-gray-600 dark:text-gray-300"></div>
-                            <div id="qr-reader" class="w-full max-w-md"></div>
-                            <div class="flex flex-wrap gap-3">
+                            <div id="qr-reader" class="qr-reader"></div>
+                                <div class="flex flex-wrap gap-3">
                                 <button
                                     type="button"
                                     id="start-scan"
@@ -147,6 +147,28 @@
     </div>
 
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+        <style>
+        .qr-reader {
+            width: 240px;
+            height: 240px;
+            border-radius: 0.75rem;
+            border: 1px solid #e5e7eb;
+            overflow: hidden;
+            background-color: #f9fafb;
+        }
+
+        .dark .qr-reader {
+            border-color: #374151;
+            background-color: #111827;
+        }
+
+        .qr-reader video,
+        .qr-reader img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    </style>
     <script>
         const scanButtons = document.querySelectorAll('.scan-mode-btn');
         const cameraPanel = document.getElementById('camera-panel');
@@ -307,6 +329,11 @@
             startScanButton.removeAttribute('disabled');
         };
 
+        const requestCameraPermission = async () => {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            stream.getTracks().forEach((track) => track.stop());
+        };
+
         const startScanner = async () => {
             if (!window.Html5Qrcode) {
                 setFeedback('Camera scanning is not supported on this device. Paste the QR link instead.', 'error');
@@ -320,9 +347,34 @@
                 return;
             }
 
-            const cameras = await Html5Qrcode.getCameras();
+            if (!window.isSecureContext) {
+                setFeedback('Camera scanning requires a secure (HTTPS) connection. Paste the QR link instead.', 'error');
+                setActivePanel('link');
+                return;
+            }
+
+            let cameras = [];
+            try {
+                cameras = await Html5Qrcode.getCameras();
+            } catch (error) {
+                setFeedback(error.message || 'Unable to access camera devices. Check permissions and try again.', 'error');
+                setActivePanel('link');
+                return;
+            }
+
             if (!cameras.length) {
-                setFeedback('Camera scanning is not supported on this device. Paste the QR link instead.', 'error');
+                try {
+                    await requestCameraPermission();
+                    cameras = await Html5Qrcode.getCameras();
+                } catch (error) {
+                    setFeedback(error.message || 'Unable to access the camera. Allow permission and try again.', 'error');
+                    setActivePanel('link');
+                    return;
+                }
+            }
+
+            if (!cameras.length) {
+                setFeedback('No camera was detected on this device. Paste the QR link instead.', 'error');
                 setActivePanel('link');
                 return;
             }

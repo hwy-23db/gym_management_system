@@ -42,7 +42,7 @@ class BlogController extends Controller
 
         $post = BlogPost::create($validated);
 
-        if ($post->is_published) {
+        if ($post->is_published && $post->published_at && $post->published_at->lessThanOrEqualTo(now())) {
             $this->notifyAudience($post);
         }
 
@@ -75,7 +75,7 @@ class BlogController extends Controller
         $wasPublished = $blog->is_published;
         $blog->update($validated);
 
-        if (! $wasPublished && $blog->is_published) {
+        if (! $wasPublished && $blog->is_published && $blog->published_at && $blog->published_at->lessThanOrEqualTo(now())) {
             $this->notifyAudience($blog);
         }
 
@@ -115,11 +115,16 @@ class BlogController extends Controller
         $validated['is_published'] = $isPublished;
         $publishedAt = $validated['published_at'] ?? null;
 
+        if (!$isPublished && $publishedAt) {
+            $isPublished = true;
+            $validated['is_published'] = true;
+        }
+
         if ($isPublished && !$publishedAt) {
             $validated['published_at'] = $existingPublishedAt ?? now();
         }
 
-        if (!$isPublished) {
+        if (!$isPublished && !$publishedAt) {
             $validated['published_at'] = null;
         }
 

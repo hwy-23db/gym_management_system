@@ -38,6 +38,7 @@ Authorization: Bearer {token}
 12. [Trainer Module](#trainer-module)
 13. [Captcha](#captcha)
 14. [Errors](#errors)
+15. [Endpoint Access Matrix](#endpoint-access-matrix)
 
 ---
 
@@ -898,6 +899,33 @@ Example:
 GET /captcha/api/default
 ```
 
+### 43) Captcha Image (API)
+
+**GET** `/captcha`
+
+**Success (200)**
+```json
+{
+  "captcha": "<img src=\"data:image/png;base64,...\" />"
+}
+```
+
+---
+
+### 44) Captcha Refresh (API)
+
+**GET** `/captcha/refresh`
+
+**Success (200)**
+```json
+{
+  "captcha": "<img src=\"data:image/png;base64,...\" />"
+}
+```
+
+---
+
+
 ---
 
 ## Errors
@@ -912,6 +940,76 @@ GET /captcha/api/default
 | 404 | Not Found |
 | 422 | Validation Error |
 | 500 | Server Error (check `storage/logs/laravel.log`) |
+
+## Endpoint Access Matrix
+
+**Legend**
+- **Public**: No authentication required
+- **Auth**: Any authenticated user (Bearer token required)
+- **Admin**: Authenticated user with `administrator` role
+- **Trainer**: Authenticated user with `trainer` role
+- **User**: Authenticated user with `user` role
+
+| Method | Endpoint | Access |
+| --- | --- | --- |
+| POST | `/login` | Public |
+| POST | `/logout` | Auth |
+| POST | `/register` | Admin |
+| GET | `/version` | Public |
+| GET | `/blogs` | Public |
+| GET | `/blogs/{slug}` | Public |
+| GET | `/captcha` | Public |
+| GET | `/captcha/refresh` | Public |
+| GET | `/captcha/api/{config?}` | Public |
+| GET | `/user` | Auth |
+| PUT | `/user/profile` | Auth |
+| PATCH | `/user/profile` | Auth |
+| GET | `/notifications` | Auth |
+| POST | `/notifications/{notificationId}/read` | Auth |
+| POST | `/notifications/read-all` | Auth |
+| GET | `/my/messages` | Auth |
+| POST | `/my/messages` | Auth |
+| GET | `/users` | Admin |
+| POST | `/users/forgot-password` | Admin |
+| DELETE | `/users/{id}` | Admin |
+| POST | `/users/{id}/restore` | Admin |
+| PUT | `/pricing/monthly` | Admin |
+| PUT | `/pricing/quarterly` | Admin |
+| PUT | `/pricing/annual` | Admin |
+| PUT | `/pricing/trainers/{user}` | Admin |
+| GET | `/trainer-bookings` | Admin |
+| POST | `/trainer-bookings` | Admin |
+| PATCH | `/trainer-bookings/{booking}/mark-paid` | Admin |
+| GET | `/subscriptions` | Admin |
+| POST | `/subscriptions` | Admin |
+| GET | `/subscriptions/options` | Admin |
+| POST | `/subscriptions/{subscription}/hold` | Admin |
+| POST | `/subscriptions/{subscription}/resume` | Admin |
+| GET | `/attendance/users` | Admin |
+| GET | `/attendance/qr` | Admin |
+| GET | `/attendance/records` | Admin |
+| GET | `/attendance/checked-in` | Admin |
+| POST | `/attendance/scan` | Admin |
+| POST | `/attendance/scan/qr` | Admin |
+| POST | `/attendance/qr/refresh` | Admin |
+| GET | `/dashboard/attendance-report` | Admin |
+| GET | `/dashboard/export/{format}` | Admin |
+| GET | `/messages` | Admin |
+| GET | `/messages/{user}` | Admin |
+| POST | `/messages/{user}` | Admin |
+| GET | `/trainer/home` | Trainer |
+| GET | `/trainer/check-in` | Trainer |
+| POST | `/trainer/check-in/scan` | Trainer |
+| GET | `/trainer/subscriptions` | Trainer |
+| GET | `/trainer/messages` | Trainer |
+| POST | `/trainer/messages` | Trainer |
+| GET | `/user/home` | User |
+| GET | `/user/check-in` | User |
+| POST | `/user/check-in/scan` | User |
+| GET | `/user/subscriptions` | User |
+| GET | `/user/messages` | User |
+| POST | `/user/messages` | User |
+
 
 ---
 

@@ -68,7 +68,15 @@
                             </label>
                             <div class="flex-1">
                                 <label class="block text-sm font-medium" for="published_at">Publish Date (optional)</label>
-                                <input id="published_at" name="published_at" type="datetime-local" value="{{ old('published_at', optional($post->published_at)->format('Y-m-d\TH:i')) }}" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100">
+                                <input
+                                    id="published_at"
+                                    name="published_at"
+                                    type="datetime-local"
+                                    value="{{ old('published_at', optional($post->published_at)->format('Y-m-d\TH:i')) }}"
+                                    data-published-at="{{ optional($post->published_at)->toIso8601String() }}"
+                                    data-has-old="{{ old('published_at') !== null ? '1' : '0' }}"
+                                    class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+                                >
                                 <input type="hidden" name="timezone_offset" id="timezone_offset" value="{{ old('timezone_offset') }}">
                                 @error('published_at')
                                     <p class="text-sm text-rose-600 mt-1">{{ $message }}</p>
@@ -95,6 +103,7 @@
             const preview = document.getElementById('cover-image-preview');
             const previewImage = document.getElementById('cover-image-preview-img');
             const timezoneInput = document.getElementById('timezone_offset');
+            const publishedAtInput = document.getElementById('published_at');
 
             if (!input || !preview || !previewImage) {
                 return;
@@ -102,6 +111,17 @@
 
             if (timezoneInput) {
                 timezoneInput.value = String(new Date().getTimezoneOffset());
+            }
+
+            if (publishedAtInput && publishedAtInput.dataset.publishedAt && publishedAtInput.dataset.hasOld !== '1') {
+                const publishedDate = new Date(publishedAtInput.dataset.publishedAt);
+
+                if (!Number.isNaN(publishedDate.getTime())) {
+                    const localValue = new Date(publishedDate.getTime() - (publishedDate.getTimezoneOffset() * 60000))
+                        .toISOString()
+                        .slice(0, 16);
+                    publishedAtInput.value = localValue;
+                }
             }
 
 

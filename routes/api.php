@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\MessageController;
 use App\Http\Controllers\Api\TrainerController;
 use App\Http\Controllers\Api\UserMessageController;
 use App\Http\Controllers\Api\UserController;
+use Mews\Captcha\Facades\Captcha;
 
 // Login endpoint - rate limiting is handled in LoginRequest class
 // 5 attempts per email+IP combination with 60 second lockout
@@ -33,6 +34,20 @@ Route::get('/version', function () {
         'laravel_version' => app()->version(),
     ]);
 });
+
+// CAPTCHA endpoints (public)
+Route::get('/captcha', function () {
+    return response()->json(['captcha' => captcha_img()]);
+});
+
+Route::get('/captcha/refresh', function () {
+    return response()->json(['captcha' => captcha_img()]);
+});
+
+Route::get('/captcha/api/{config?}', function (?string $config = null) {
+    return response()->json(['captcha' => Captcha::src($config)]);
+});
+
 
 // Note: CSRF token endpoint is not needed for token-based API authentication
 // For stateful SPA authentication, use Sanctum's built-in endpoint: GET /sanctum/csrf-cookie

@@ -36,8 +36,8 @@
                             @if($post->summary)
                                 <p class="text-sm text-gray-600 dark:text-gray-300">{{ $post->summary }}</p>
                             @endif
-                            <div class="text-sm text-gray-700 dark:text-gray-200">
-                                {{ \Illuminate\Support\Str::limit(strip_tags($post->content), 180) }}
+                            <div class="text-sm text-gray-700 dark:text-gray-200 whitespace-pre-line">
+                                {!! nl2br(e($post->content)) !!}
                             </div>
                         </div>
                     </div>

@@ -81,6 +81,14 @@
                                 </button>
                                 <button
                                     type="button"
+                                    id="flip-camera"
+                                    class="inline-flex items-center justify-center rounded-md border border-gray-300 dark:border-gray-700 px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700"
+                                    disabled
+                                >
+                                    Flip Camera
+                                </button>
+                                <button
+                                    type="button"
                                     id="stop-scan"
                                     class="inline-flex items-center justify-center rounded-md border border-gray-300 dark:border-gray-700 px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700"
                                     disabled
@@ -176,6 +184,7 @@
         const scanFeedback = document.getElementById('scan-feedback');
         const cameraStatus = document.getElementById('camera-status');
         const startScanButton = document.getElementById('start-scan');
+        const flipCameraButton = document.getElementById('flip-camera');
         const stopScanButton = document.getElementById('stop-scan');
         const linkForm = document.getElementById('link-form');
         const linkInput = document.getElementById('qr-link-input');
@@ -184,6 +193,8 @@
 
         const baseScanUrl = '{{ url('/attendance/scan') }}';
         let html5QrCode = null;
+        let cameras = [];
+        let currentCameraIndex = 0;
 
         const statusStyles = {
             check_in: {
@@ -327,6 +338,15 @@
             await html5QrCode.stop();
             stopScanButton.setAttribute('disabled', 'disabled');
             startScanButton.removeAttribute('disabled');
+            flipCameraButton.setAttribute('disabled', 'disabled');
+        };
+
+        const updateFlipCameraState = () => {
+            if (cameras.length > 1) {
+                flipCameraButton.removeAttribute('disabled');
+            } else {
+                flipCameraButton.setAttribute('disabled', 'disabled');
+            }
         };
 
         const requestCameraPermission = async () => {
@@ -353,7 +373,7 @@
                 return;
             }
 
-            let cameras = [];
+
             try {
                 cameras = await Html5Qrcode.getCameras();
             } catch (error) {
@@ -383,8 +403,16 @@
                 html5QrCode = new Html5Qrcode('qr-reader');
             }
 
+            if (currentCameraIndex >= cameras.length) {
+                currentCameraIndex = 0;
+            }
+
+            const cameraConfig = cameras.length
+                ? cameras[currentCameraIndex]?.id ?? cameras[0].id
+                : { facingMode: 'environment' };
+
             await html5QrCode.start(
-                { facingMode: 'environment' },
+                cameraConfig,
                 { fps: 10, qrbox: { width: 220, height: 220 } },
                 async (decodedText) => {
                     try {
@@ -399,6 +427,7 @@
             cameraStatus.textContent = 'Camera is active. Align the QR code inside the frame.';
             startScanButton.setAttribute('disabled', 'disabled');
             stopScanButton.removeAttribute('disabled');
+            updateFlipCameraState();
         };
 
         const recordScanFromInput = async (input) => {
@@ -430,6 +459,25 @@
                 setFeedback(error.message || 'Unable to access the camera.', 'error');
             }
         });
+
+        flipCameraButton.addEventListener('click', async () => {
+            if (cameras.length < 2) {
+                setFeedback('Only one camera is available on this device.', 'error');
+                return;
+            }
+
+            try {
+                if (html5QrCode && html5QrCode.isScanning) {
+                    await stopScanner();
+                }
+
+                currentCameraIndex = (currentCameraIndex + 1) % cameras.length;
+                await startScanner();
+            } catch (error) {
+                setFeedback(error.message || 'Unable to switch the camera.', 'error');
+            }
+        });
+
 
         stopScanButton.addEventListener('click', async () => {
             try {

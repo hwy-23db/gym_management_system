@@ -348,6 +348,15 @@
             }
         };
 
+        const setCameraStatus = (message, cameraLabel = '') => {
+            if (cameraLabel) {
+                cameraStatus.textContent = `${message} (${cameraLabel})`;
+                return;
+            }
+
+            cameraStatus.textContent = message;
+        };
+
         const requestCameraPermission = async () => {
             const stream = await navigator.mediaDevices.getUserMedia({ video: true });
             stream.getTracks().forEach((track) => track.stop());
@@ -398,12 +407,17 @@
                 return;
             }
 
+            updateFlipCameraState();
+
+            currentCameraIndex = currentCameraIndex % cameras.length;
+
             if (!html5QrCode) {
                 html5QrCode = new Html5Qrcode('qr-reader');
             }
 
-            const cameraConfig = cameras.length
-                ? { deviceId: { exact: cameras[currentCameraIndex]?.id ?? cameras[0].id } }
+            const activeCamera = cameras[currentCameraIndex] ?? cameras[0];
+            const cameraConfig = activeCamera
+                ? { deviceId: { exact: activeCamera.id } }
                 : { facingMode: 'environment' };
 
             await html5QrCode.start(
@@ -419,10 +433,10 @@
                 }
             );
 
-            cameraStatus.textContent = 'Camera is active. Align the QR code inside the frame.';
+            setCameraStatus('Camera is active. Align the QR code inside the frame.', activeCamera?.label);
             startScanButton.setAttribute('disabled', 'disabled');
             stopScanButton.removeAttribute('disabled');
-            updateFlipCameraState();
+
         };
 
         const recordScanFromInput = async (input) => {
@@ -455,7 +469,7 @@
             }
         });
 
-         flipCameraButton.addEventListener('click', async () => {
+        flipCameraButton.addEventListener('click', async () => {
             if (cameras.length < 2) {
                 setFeedback('Only one camera is available on this device.', 'error');
                 return;
@@ -463,6 +477,7 @@
 
             try {
                 if (html5QrCode && html5QrCode.isScanning) {
+                    setCameraStatus('Switching camera...');
                     await stopScanner();
                 }
 

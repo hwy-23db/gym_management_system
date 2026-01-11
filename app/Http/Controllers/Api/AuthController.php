@@ -9,6 +9,7 @@ use App\Http\Requests\Api\PublicRegisterRequest;
 use App\Http\Requests\Api\VerifyEmailRequest;
 use App\Http\Requests\Api\ForgotPasswordRequest;
 use App\Http\Requests\Api\UpdateProfileRequest;
+use App\Http\Requests\Api\UpdateUserRequest;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
@@ -470,6 +471,116 @@ class AuthController extends Controller
             'message' => 'User deleted successfully (soft delete). User can be restored.',
             'deleted_user' => $deletedUserInfo,
             'deleted_at' => $user->deleted_at
+        ], 200);
+    }
+
+    /**
+     * Update User Endpoint
+     * Updates a user in the system
+     * ONLY accessible by administrator
+     */
+    public function updateUser(UpdateUserRequest $request, $id)
+    {
+        if (!is_numeric($id) || (int)$id != $id) {
+            return response()->json([
+                'message' => 'Invalid user ID provided.'
+            ], 400);
+        }
+
+        $user = User::find($id);
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'The specified user does not exist.'
+            ], 404);
+        }
+
+        if ($user->role === 'administrator') {
+            Log::warning('Attempt to update administrator blocked', [
+                'attempted_by' => $request->user()->id,
+                'target_user_id' => $user->id,
+                'ip' => $request->ip(),
+            ]);
+
+            return response()->json([
+                'message' => 'Cannot update root user through this endpoint.'
+            ], 403);
+        }
+
+        $updatedFields = [];
+
+        if ($request->has('name')) {
+            $user->name = $request->validated('name');
+            $updatedFields[] = 'name';
+        }
+
+        if ($request->has('email')) {
+            $oldEmail = $user->email;
+            $user->email = $request->validated('email');
+            $updatedFields[] = 'email';
+
+            if ($oldEmail !== $user->email) {
+                $user->email_verified_at = null;
+            }
+        }
+
+        if ($request->has('phone')) {
+            $user->phone = $request->validated('phone');
+            $updatedFields[] = 'phone';
+        }
+
+        if ($request->has('role')) {
+            $user->role = $request->validated('role');
+            $updatedFields[] = 'role';
+        }
+
+        if ($request->has('notifications_enabled')) {
+            $user->notifications_enabled = $request->validated('notifications_enabled');
+            $updatedFields[] = 'notifications_enabled';
+        }
+
+        if ($request->has('password')) {
+            $user->password = $request->validated('password');
+            $updatedFields[] = 'password';
+        }
+
+        if (!empty($updatedFields)) {
+            $user->save();
+
+            Log::info('User updated by administrator', [
+                'updated_user_id' => $user->id,
+                'updated_email' => $user->email,
+                'updated_fields' => $updatedFields,
+                'updated_by' => $request->user()->id,
+                'updated_by_email' => $request->user()->email,
+                'ip' => $request->ip(),
+            ]);
+
+            return response()->json([
+                'message' => 'User updated successfully',
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'phone' => $user->phone,
+                    'role' => $user->role,
+                    'email_verified_at' => $user->email_verified_at,
+                    'notifications_enabled' => $user->notifications_enabled,
+                    'updated_at' => $user->updated_at,
+                ]
+            ], 200);
+        }
+
+        return response()->json([
+            'message' => 'No changes provided',
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone' => $user->phone,
+                'role' => $user->role,
+                'notifications_enabled' => $user->notifications_enabled,
+            ]
         ], 200);
     }
 

@@ -120,6 +120,10 @@ Route::middleware('auth:sanctum')->group(function () {
         // Delete a user (soft delete)
         Route::delete('/users/{id}', [AuthController::class, 'destroy']);
 
+        // Update a user
+        Route::put('/users/{id}', [AuthController::class, 'updateUser']);
+        Route::patch('/users/{id}', [AuthController::class, 'updateUser']);
+
         // Restore a soft-deleted user
         Route::post('/users/{id}/restore', [AuthController::class, 'restore']);
 

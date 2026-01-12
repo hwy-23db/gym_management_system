@@ -27,21 +27,24 @@ class LoginController extends Controller
 
         // ✅ Validate input + CAPTCHA
         $request->validate([
-            'email'   => ['required', 'string', 'max:255'],
-            'password'=> ['required'],
+              'identifier' => ['required_without:email','string', 'max:255'],
+              'email'      => ['required_without:identifier','email', 'max:255'],
+              'password'   => ['required'],
+            // 'email'   => ['required', 'string', 'max:255'],
+            // 'password'=> ['required'],
             'captcha' => ['required', 'captcha', "digits:{$captchaLength}"],
         ], [
             'captcha.captcha' => 'Invalid captcha. Please try again.',
             'captcha.digits' => 'Captcha must be numbers only.',
         ]);
 
-         $identifier = trim((string) $request->input('email'));
+        $identifier = trim((string) ($request->input('identifier') ?? $request->input('email')));
         $field = filter_var($identifier, FILTER_VALIDATE_EMAIL) ? 'email' : 'phone';
         $user = User::query()->where($field, $identifier)->first();
 
         if (! $user) {
             throw ValidationException::withMessages([
-                'email' => 'Invalid email or password.',
+                'identifier' => 'Invalid Credentials.',
             ]);
         }
 

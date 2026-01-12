@@ -31,7 +31,7 @@ class LoginRequest extends FormRequest
         $captchaLength = config('captcha.default.length', 6);
 
         return [
-            'email' => ['required', 'string', 'max:255'],
+            'identifier' => ['required', 'string', 'max:255'],
             'password' => ['required', 'string'],
             //'captcha'  => ['required', 'captcha', "digits:{$captchaLength}"],
         ];
@@ -55,16 +55,20 @@ class LoginRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
-        // Normalize email to lowercase
-        if ($this->has('email')) {
-            $this->merge([
-                'email' => strtolower(trim($this->email)),
-            ]);
+        $identifier = $this->input('identifier');
+
+        if (! $identifier) {
+            $identifier = $this->input('email') ?? $this->input('phone');
         }
 
-        if (! $this->has('email') && $this->has('phone')) {
+        if ($identifier !== null) {
+            $normalized = trim((string) $identifier);
+
+            if (filter_var($normalized, FILTER_VALIDATE_EMAIL)) {
+                $normalized = strtolower($normalized);
+            }
             $this->merge([
-                'email' => trim($this->phone),
+                'identifier' => $normalized,
             ]);
         }
     }
@@ -90,7 +94,7 @@ class LoginRequest extends FormRequest
             RateLimiter::hit($this->throttleKey(), 60);
 
             throw ValidationException::withMessages([
-                'email' => ['Administrators must sign in with their email address.'],
+                'identifier' => ['Administrators must sign in with their email address.'],
             ]);
         }
 
@@ -98,7 +102,7 @@ class LoginRequest extends FormRequest
             RateLimiter::hit($this->throttleKey(), 60);
 
             throw ValidationException::withMessages([
-                'email' => ['Please sign in with your phone number.'],
+                'identifier' => ['Please sign in with your phone number.'],
             ]);
         }
 
@@ -115,7 +119,7 @@ class LoginRequest extends FormRequest
             ]);
 
             throw ValidationException::withMessages([
-                'email' => [trans('auth.failed')],
+                'identifier' => [trans('auth.failed')],
             ]);
         }
 
@@ -123,7 +127,7 @@ class LoginRequest extends FormRequest
             RateLimiter::hit($this->throttleKey(), 60);
 
             throw ValidationException::withMessages([
-                'email' => ['Please verify your email before logging in.'],
+                'identifier' => ['Please verify your email before logging in.'],
             ]);
         }
 
@@ -156,14 +160,14 @@ class LoginRequest extends FormRequest
         $seconds = RateLimiter::availableIn($this->throttleKey());
 
         Log::warning('Login rate limit exceeded', [
-            'email' => $this->email,
+            // 'email' => $this->email,
             'identifier' => $this->loginIdentifier(),
             'ip' => $this->ip(),
             'seconds' => $seconds,
         ]);
 
         throw ValidationException::withMessages([
-            'email' => [
+            'identifier' => [
                 trans('auth.throttle', [
                     'seconds' => $seconds,
                     'minutes' => ceil($seconds / 60),
@@ -182,7 +186,7 @@ class LoginRequest extends FormRequest
 
     public function loginIdentifier(): string
     {
-        return trim((string) $this->input('email'));
+        return trim((string) $this->input('identifier'));
     }
 
     public function identifierField(string $identifier): string

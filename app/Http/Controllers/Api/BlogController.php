@@ -43,7 +43,11 @@ class BlogController extends Controller
 
     public function update(Request $request, BlogPost $blog): JsonResponse
     {
+
         $validated = $this->validatePost($request);
+        if (! array_key_exists('is_published', $validated)) {
+            $validated['is_published'] = $blog->is_published;
+        }
         $validated['slug'] = $this->generateUniqueSlug($validated['title'], $blog->id);
 
         if ($request->hasFile('cover_image')) {

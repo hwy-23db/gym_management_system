@@ -66,6 +66,7 @@ class SubscriptionController extends Controller
                     'plan_name' => $subscription->plan?->name ?? 'Plan',
                     'duration_days' => $durationDays,
                     'price' => $price,
+                    'created_at' => optional($subscription->created_at)->toIso8601String(),
                     'start_date' => optional($subscription->start_date)->toDateString(),
                     'end_date' => optional($adjustedEndDate)->toDateString(),
                     'is_on_hold' => (bool) $subscription->is_on_hold,

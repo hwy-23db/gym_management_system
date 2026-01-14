@@ -168,6 +168,7 @@ Route::middleware('auth:sanctum')->group(function () {
         });
 
         Route::get('/dashboard/attendance-report', [DashboardController::class, 'attendanceReport']);
+        Route::get('/dashboard/growth-summary', [DashboardController::class, 'growthSummary']);
         Route::get('/dashboard/export/{format}', [DashboardReportController::class, 'export'])
             ->whereIn('format', ['excel', 'json']);
 

@@ -29,24 +29,39 @@ class DashboardReportExporter
 
     public function buildExcelDocument(array $reportData): string
     {
-        $sections = collect($reportData)->map(function (Collection $rows, string $title) {
+        $worksheets = collect($reportData)->map(function (Collection $rows, string $title) {
             $normalizedRows = $this->normalizeRows($rows);
 
-            return $this->renderTable($title, $normalizedRows);
+             return $this->renderWorksheet($title, $normalizedRows);
         })->implode("\n");
 
-        return <<<HTML
-<!doctype html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>Dashboard Report</title>
-    </head>
-    <body>
-        {$sections}
-    </body>
-</html>
-HTML;
+         return <<<XML
+<?xml version="1.0" encoding="UTF-8"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+    xmlns:o="urn:schemas-microsoft-com:office:office"
+    xmlns:x="urn:schemas-microsoft-com:office:excel"
+    xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
+    xmlns:html="http://www.w3.org/TR/REC-html40">
+    {$worksheets}
+</Workbook>
+XML;
+    }
+
+    public function buildJsonDocument(array $reportData): string
+    {
+        $normalizedData = collect($reportData)->map(function (Collection $rows) {
+            return $rows->map(function ($row) {
+                $data = is_array($row) ? $row : $row->toArray();
+
+                return $this->normalizeJsonValue($data);
+            })->all();
+        })->all();
+
+        return json_encode(
+            $normalizedData,
+            JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT
+        );
     }
 
     private function normalizeRows(Collection $rows): array
@@ -77,43 +92,73 @@ HTML;
         return (string) ($value ?? '');
     }
 
-    private function renderTable(string $title, array $rows): string
+        private function normalizeJsonValue($value)
     {
-        $escapedTitle = htmlspecialchars($title, ENT_QUOTES, 'UTF-8');
-
-        if (count($rows) === 0) {
-            return <<<HTML
-<h2>{$escapedTitle}</h2>
-<p>No data available.</p>
-HTML;
+        if ($value instanceof DateTimeInterface) {
+            return $value->format('Y-m-d H:i:s');
         }
 
-        $headers = array_keys($rows[0]);
-        $headerCells = collect($headers)
-            ->map(fn ($header) => '<th>' . htmlspecialchars($header, ENT_QUOTES, 'UTF-8') . '</th>')
-            ->implode('');
+        if (is_array($value)) {
+            return collect($value)
+                ->map(fn ($item) => $this->normalizeJsonValue($item))
+                ->all();
+        }
 
-        $bodyRows = collect($rows)->map(function (array $row) use ($headers) {
-            $cells = collect($headers)->map(function (string $header) use ($row) {
-                $value = $row[$header] ?? '';
+        if (is_bool($value)) {
+            return $value;
+        }
 
-                return '<td>' . htmlspecialchars($value, ENT_QUOTES, 'UTF-8') . '</td>';
-            })->implode('');
 
-            return "<tr>{$cells}</tr>";
+                return $value ?? '';
+    }
+
+    private function renderWorksheet(string $title, array $rows): string
+    {
+        $worksheetName = $this->sanitizeWorksheetName($title);
+
+
+                       if (count($rows) === 0) {
+            $rowsXml = $this->renderWorksheetRow(['No data available.']);
+        } else {
+            $headers = array_keys($rows[0]);
+            $rowsXml = $this->renderWorksheetRow($headers);
+
+            foreach ($rows as $row) {
+                $rowValues = array_map(
+                    fn (string $header) => $row[$header] ?? '',
+                    $headers
+                );
+                $rowsXml .= $this->renderWorksheetRow($rowValues);
+            }
+        }
+
+        return <<<XML
+        <Worksheet ss:Name="{$worksheetName}">
+            <Table>
+                {$rowsXml}
+            </Table>
+        </Worksheet>
+        XML;
+    }
+
+           private function renderWorksheetRow(array $values): string
+    {
+        $cells = collect($values)->map(function ($value) {
+            $escapedValue = htmlspecialchars((string) $value, ENT_XML1 | ENT_COMPAT, 'UTF-8');
+
+            return <<<XML
+<Cell><Data ss:Type="String">{$escapedValue}</Data></Cell>
+XML;
         })->implode('');
 
-        return <<<HTML
-<h2>{$escapedTitle}</h2>
-<table border="1" cellpadding="4" cellspacing="0">
-    <thead>
-        <tr>{$headerCells}</tr>
-    </thead>
-    <tbody>
-        {$bodyRows}
-    </tbody>
-</table>
-<br />
-HTML;
+          return "<Row>{$cells}</Row>";
+    }
+
+    private function sanitizeWorksheetName(string $title): string
+    {
+        $cleaned = preg_replace('/[:\\\\\\/\\?\\*\\[\\]]/', ' ', $title);
+        $cleaned = trim((string) $cleaned);
+
+        return mb_substr($cleaned === '' ? 'Sheet' : $cleaned, 0, 31);
     }
 }

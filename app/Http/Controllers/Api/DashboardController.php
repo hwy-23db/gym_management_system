@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\AttendanceScan;
 use App\Models\User;
+use App\Models\MemberMembership;
+use App\Models\TrainerBooking;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Http\JsonResponse;
@@ -96,6 +98,39 @@ class DashboardController extends Controller
                 'range_check_ins' => $rangeCheckIns,
                 'range_check_outs' => $rangeCheckOuts,
             ],
+        ]);
+    }
+
+
+    public function growthSummary(Request $request): JsonResponse
+    {
+        $months = max(1, (int) $request->query('months', 6));
+        $months = min($months, 24);
+
+        $range = collect(range(0, $months - 1))
+            ->map(fn ($offset) => Carbon::now()->subMonths($months - 1 - $offset)->startOfMonth());
+
+        $labels = $range->map(fn (Carbon $month) => $month->format('M Y'));
+
+        $userCounts = $range->map(fn (Carbon $month) => User::query()
+            ->where('role', 'user')
+            ->whereBetween('created_at', [$month, $month->copy()->endOfMonth()])
+            ->count());
+
+        $subscriptionCounts = $range->map(fn (Carbon $month) => MemberMembership::query()
+            ->whereBetween('start_date', [$month, $month->copy()->endOfMonth()])
+            ->count());
+
+        $trainerBookingCounts = $range->map(fn (Carbon $month) => TrainerBooking::query()
+            ->whereBetween('session_datetime', [$month, $month->copy()->endOfMonth()])
+            ->count());
+
+        return response()->json([
+            'months' => $months,
+            'labels' => $labels,
+            'users' => $userCounts,
+            'subscriptions' => $subscriptionCounts,
+            'trainer_bookings' => $trainerBookingCounts,
         ]);
     }
 }

@@ -18,15 +18,20 @@ class DashboardReportController extends Controller
         $timestamp = now()->format('Ymd_His');
 
         if ($format === 'json') {
-            return response()
-                ->json($reportData)
+            $json = $exporter->buildJsonDocument($reportData);
+
+            return response($json)
+                ->header('Content-Type', 'application/json; charset=UTF-8')
                 ->header('Content-Disposition', "attachment; filename=dashboard-report-{$timestamp}.json");
         }
 
-        $html = $exporter->buildExcelDocument($reportData);
+       // DashboardReportController.php
+        $excel = $exporter->buildExcelDocument($reportData);
 
-        return response($html)
-            ->header('Content-Type', 'application/vnd.ms-excel; charset=UTF-8')
-            ->header('Content-Disposition', "attachment; filename=dashboard-report-{$timestamp}.xls");
+        return response($excel, 200)
+            ->header('Content-Type', 'application/vnd.ms-excel')
+            ->header('Content-Disposition', "attachment; filename=\"dashboard-report-{$timestamp}.xls\"")
+            ->header('X-Content-Type-Options', 'nosniff');
+
     }
 }

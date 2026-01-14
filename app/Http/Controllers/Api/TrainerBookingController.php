@@ -26,8 +26,10 @@ class TrainerBookingController extends Controller
                     'id' => $booking->id,
                     'member_id' => $booking->member_id,
                     'member_name' => $booking->member?->name ?? 'Unknown',
+                    'member_phone' => $booking->member_phone,
                     'trainer_id' => $booking->trainer_id,
                     'trainer_name' => $booking->trainer?->name ?? 'Unknown',
+                    'trainer_phone' => $booking->trainer_phone,
                     'session_datetime' => optional($booking->session_datetime)->toDateTimeString(),
                     'duration_minutes' => $booking->duration_minutes,
                     'sessions_count' => $booking->sessions_count,
@@ -35,6 +37,7 @@ class TrainerBookingController extends Controller
                     'total_price' => $booking->total_price,
                     'status' => $booking->status,
                     'paid_status' => $booking->paid_status,
+                    'paid_at' => optional($booking->paid_at)->toDateTimeString(),
                     'notes' => $booking->notes,
                 ];
             });

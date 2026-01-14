@@ -7,6 +7,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class TrainerBooking extends Model
 {
+     protected $appends = [
+        'member_phone',
+        'trainer_phone',
+    ];
+
     protected $fillable = [
         'member_id',
         'trainer_id',
@@ -26,13 +31,27 @@ class TrainerBooking extends Model
         'paid_at' => 'datetime',
     ];
 
-    public function member(): BelongsTo
+    // App\Models\TrainerBooking.php
+
+    public function member()
     {
         return $this->belongsTo(User::class, 'member_id');
     }
 
-    public function trainer(): BelongsTo
+    public function trainer()
     {
         return $this->belongsTo(User::class, 'trainer_id');
     }
+
+
+    public function getMemberPhoneAttribute(): ?string
+    {
+        return $this->member?->phone;
+    }
+
+    public function getTrainerPhoneAttribute(): ?string
+    {
+        return $this->trainer?->phone;
+    }
+
 }

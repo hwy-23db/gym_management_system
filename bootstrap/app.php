@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Global middleware - Security headers applied to all responses
         $middleware->append([
+            \Illuminate\Http\Middleware\HandleCors::class,
             \App\Http\Middleware\SecurityHeadersMiddleware::class,
         ]);
 

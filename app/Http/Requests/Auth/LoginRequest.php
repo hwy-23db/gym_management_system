@@ -30,7 +30,7 @@ class LoginRequest extends FormRequest
         $captchaLength = config('captcha.default.length', 6);
 
         return [
-            'email' => ['required', 'string', 'max:255'],
+            'identifier' => ['required', 'string', 'max:255'],
             'password' => ['required', 'string'],
             'captcha'  => ['required', 'captcha', "digits:{$captchaLength}"],
         ];

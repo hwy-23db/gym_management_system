@@ -43,7 +43,7 @@ class BlogController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        $validated = $this->validatePost($request);
+        $validated = $this->normalizePublishFields($this->validatePost($request));
         $validated['slug'] = $this->generateUniqueSlug($validated['title']);
 
         if ($request->hasFile('cover_image')) {
@@ -68,7 +68,7 @@ class BlogController extends Controller
     public function update(Request $request, BlogPost $blog): JsonResponse
     {
 
-        $validated = $this->validatePost($request);
+        $validated = $this->normalizePublishFields($this->validatePost($request));
         if (! array_key_exists('is_published', $validated)) {
             $validated['is_published'] = $blog->is_published;
         }
@@ -123,8 +123,25 @@ class BlogController extends Controller
                 ? Storage::disk('public')->url($post->cover_image_path)
                 : null,
             'published_at' => $post->published_at?->toIso8601String(),
+            'publish_immediately' => ['nullable', 'boolean'],
+            'publish_date' => ['nullable', 'date'],
             'updated_at' => $post->updated_at->toIso8601String(),
         ];
+    }
+
+        private function normalizePublishFields(array $validated): array
+    {
+        if (array_key_exists('publish_immediately', $validated) && ! array_key_exists('is_published', $validated)) {
+            $validated['is_published'] = (bool) $validated['publish_immediately'];
+        }
+
+        if (array_key_exists('publish_date', $validated) && ! array_key_exists('published_at', $validated)) {
+            $validated['published_at'] = $validated['publish_date'];
+        }
+
+        unset($validated['publish_immediately'], $validated['publish_date']);
+
+        return $validated;
     }
 
     private function validatePost(Request $request): array

@@ -126,7 +126,7 @@ class BlogController extends Controller
                 : null,
             'is_published' => $post->is_published,
             'published_at' => $post->published_at?->toIso8601String(),
-            'publish_immediately' => $publishImmediately,
+            'is_live_now' => $publishImmediately,
             'publish_date' => $post->published_at?->toIso8601String(),
             'updated_at' => $post->updated_at->toIso8601String(),
         ];

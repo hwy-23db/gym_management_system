@@ -86,12 +86,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/my/messages', [UserMessageController::class, 'sendMessage']);
 
 
-    // Registration endpoint - ONLY accessible by administrator
-    // Root user can create other users (admission, nurse, doctor)
+    // Root user can create other users (admission, trainer, user)
     Route::post('/admin/register', [AuthController::class, 'register'])
         ->middleware('administrator');
 
-    Route::middleware('trainer')->prefix('trainer')->group(function () {
+   Route::middleware('role:trainer')->prefix('trainer')->group(function () {
         Route::get('/home', [TrainerController::class, 'home']);
         Route::get('/check-in', [TrainerController::class, 'checkIn']);
         Route::post('/check-in/scan', [TrainerController::class, 'scanFromQr']);

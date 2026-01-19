@@ -101,6 +101,7 @@ class TrainerController extends Controller
                         'id' => $booking->member?->id,
                         'name' => $booking->member?->name,
                         'email' => $booking->member?->email,
+                        'phone' => $booking->member?->phone,
                     ],
                     'session_datetime' => $booking->session_datetime?->toIso8601String(),
                     'duration_minutes' => $booking->duration_minutes,

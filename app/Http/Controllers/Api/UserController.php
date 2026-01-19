@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\AttendanceScan;
 use App\Models\BlogPost;
 use App\Models\Message;
+use App\Models\MemberMembership;
 use App\Models\TrainerBooking;
 use App\Models\User;
+use App\Models\PricingSetting;
 use App\Notifications\NewMessageNotification;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -88,6 +90,61 @@ class UserController extends Controller
     public function subscriptions(Request $request): JsonResponse
     {
         $user = $request->user();
+
+        $subscriptions = MemberMembership::query()
+            ->with('plan')
+            ->where('member_id', $user->id)
+            ->orderByDesc('start_date')
+            ->get();
+
+        $pricingSetting = PricingSetting::query()->firstOrCreate(
+            [],
+            [
+                'monthly_subscription_price' => 80000,
+                'quarterly_subscription_price' => 240000,
+                'annual_subscription_price' => 960000,
+            ]
+        );
+
+        $today = Carbon::today();
+
+        return response()->json([
+            'subscriptions' => $subscriptions->map(function (MemberMembership $subscription) use ($pricingSetting, $today) {
+                $durationDays = $subscription->plan?->duration_days ?? 0;
+                $price = $this->resolvePlanPrice($durationDays, $pricingSetting);
+
+                $holdDays = 0;
+                $adjustedEndDate = $subscription->end_date;
+
+                if ($subscription->is_on_hold && $subscription->hold_started_at && $subscription->end_date) {
+                    $holdStartedAt = Carbon::parse($subscription->hold_started_at);
+                    $holdDays = max(0, $holdStartedAt->diffInDays($today));
+                    $adjustedEndDate = Carbon::parse($subscription->end_date)->addDays($holdDays);
+                }
+
+                $isExpired = ! $subscription->is_on_hold
+                    && ($subscription->is_expired || ($adjustedEndDate && $adjustedEndDate->lt($today)));
+                $status = $subscription->is_on_hold ? 'On Hold' : ($isExpired ? 'Expired' : 'Active');
+
+                return [
+                    'id' => $subscription->id,
+                    'plan_name' => $subscription->plan?->name ?? 'Plan',
+                    'duration_days' => $durationDays,
+                    'price' => $price,
+                    'created_at' => optional($subscription->created_at)->toIso8601String(),
+                    'start_date' => optional($subscription->start_date)->toDateString(),
+                    'end_date' => optional($adjustedEndDate)->toDateString(),
+                    'is_on_hold' => (bool) $subscription->is_on_hold,
+                    'status' => $status,
+                ];
+            }),
+        ]);
+    }
+
+    public function bookings(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
 
         $bookings = TrainerBooking::query()
             ->with('trainer')
@@ -199,6 +256,28 @@ class UserController extends Controller
             'timestamp' => $scan->scanned_at?->toIso8601String(),
         ];
     }
+
+    private function resolvePlanPrice(?int $durationDays, ?PricingSetting $pricingSetting): ?float
+    {
+        if (! $pricingSetting || ! $durationDays) {
+            return null;
+        }
+
+        if ($durationDays >= 360) {
+            return (float) $pricingSetting->annual_subscription_price;
+        }
+
+        if ($durationDays >= 80) {
+            return (float) $pricingSetting->quarterly_subscription_price;
+        }
+
+        if ($durationDays >= 28) {
+            return (float) $pricingSetting->monthly_subscription_price;
+        }
+
+        return null;
+    }
+
 
     private function recordScan(User $user): AttendanceScan
     {

@@ -891,7 +891,7 @@ GET /api/blogs/how-to-build-muscle
 
 ---
 
-### 41) Trainer Subscriptions
+### 41) Trainer bookings
 
 **GET** `/trainer/subscriptions` ✅ Protected (trainer)
 
@@ -933,11 +933,72 @@ GET /api/blogs/how-to-build-muscle
 { "status": "sent" }
 ```
 
+## User Module
+
+### 44) User Home
+
+**GET** `/user/home` ✅ Protected (user)
+
+---
+
+### 45) User Check-in
+
+**GET** `/user/check-in` ✅ Protected (user)
+
+---
+
+### 46) User Scan From QR
+
+**POST** `/user/check-in/scan` ✅ Protected (user)
+
+---
+
+### 47) User Subscriptions
+
+**GET** `/user/subscriptions` ✅ Protected (user)
+
+**Success (200)**
+```json
+{
+  "subscriptions": [
+    {
+      "id": 3,
+      "plan_name": "Monthly",
+      "duration_days": 28,
+      "price": 80000,
+      "created_at": "2026-01-02T10:00:00+00:00",
+      "start_date": "2026-01-02",
+      "end_date": "2026-01-30",
+      "is_on_hold": false,
+      "status": "Active"
+    }
+  ]
+}
+```
+
+---
+
+### 48) User Bookings
+
+**GET** `/user/bookings` ✅ Protected (user)
+
+---
+
+### 49) User Messages (User ↔ Admin)
+
+**GET** `/user/messages` ✅ Protected (user)
+
+---
+
+### 50) User Send Message to Admin
+
+**POST** `/user/messages` ✅ Protected (user)
+
 ---
 
 ## Captcha
 
-### 44) Captcha API
+### 51) Captcha API
 
 **GET** `/captcha/api/{config?}`
 
@@ -946,7 +1007,7 @@ Example:
 GET /captcha/api/default
 ```
 
-### 45) Captcha Image (API)
+### 52) Captcha Image (API)
 
 **GET** `/captcha`
 
@@ -959,7 +1020,7 @@ GET /captcha/api/default
 
 ---
 
-### 46) Captcha Refresh (API)
+### 53) Captcha Refresh (API)
 
 **GET** `/captcha/refresh`
 
@@ -1055,7 +1116,8 @@ GET /captcha/api/default
 | GET | `/user/home` | User |
 | GET | `/user/check-in` | User |
 | POST | `/user/check-in/scan` | User |
-| GET | `/user/subscriptions` | User |
+| GET | `/user/subscriptions` | User |  
+| GET | `/user/bookings` | User |
 | GET | `/user/messages` | User |
 | POST | `/user/messages` | User |
 

@@ -104,6 +104,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/check-in', [UserController::class, 'checkIn']);
         Route::post('/check-in/scan', [UserController::class, 'scanFromQr']);
         Route::get('/subscriptions', [UserController::class, 'subscriptions']);
+        Route::get('/bookings', [UserController::class, 'bookings']);
         Route::get('/messages', [UserController::class, 'messages']);
         Route::post('/messages', [UserController::class, 'sendMessage']);
     });

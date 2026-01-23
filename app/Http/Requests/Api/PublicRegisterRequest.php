@@ -26,10 +26,10 @@ class PublicRegisterRequest extends FormRequest
                 'string',
                 'confirmed',
                 Password::min(8)
-                    ->mixedCase()
+                    ->letters()
                     ->numbers()
-                    ->symbols()
-                    ->uncompromised(),
+                    ->symbols(),
+
             ],
             'password_confirmation' => ['required', 'string'],
             'role' => ['required', 'in:trainer,user'],
@@ -45,6 +45,9 @@ class PublicRegisterRequest extends FormRequest
             'name.regex' => 'The name field may only contain letters and spaces.',
             'password.confirmed' => 'The password confirmation does not match.',
             'password.min' => 'The password must be at least 8 characters.',
+            'password.letters' => 'The password must contain at least one letter.',
+            'password.numbers' => 'The password must contain at least one number.',
+            'password.symbols' => 'The password must contain at least one symbol.',
             'role.in' => 'Invalid role selected. Role must be trainer or user.',
             'phone.unique' => 'The phone number has already been taken.',
         ];

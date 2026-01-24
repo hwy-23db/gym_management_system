@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\PricingController;
 use App\Http\Controllers\Api\SubscriptionController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\TrainerBookingController;
+use App\Http\Controllers\Api\TrainerPackageController;
 use App\Http\Controllers\Api\AttendanceController;
 use App\Http\Controllers\Api\MessageController;
 use App\Http\Controllers\Api\TrainerController;

@@ -94,7 +94,7 @@ class TrainerBookingController extends Controller
                 Rule::exists('users', 'id')->where(fn ($query) => $query->where('role', 'trainer')),
             ],
             'trainer_package_id' => ['required', Rule::exists('trainer_packages', 'id')],
-            'sessions_count' => ['required', 'integer', 'min:1'],
+            'sessions_count' => ['nullable', 'integer', 'min:1'],
             'price_per_session' => ['nullable', 'numeric', 'min:0'],
             'status' => ['nullable', 'string'],
             'paid_status' => ['nullable', 'string'],
@@ -102,8 +102,9 @@ class TrainerBookingController extends Controller
         ]);
 
         $package = TrainerPackage::findOrFail($validated['trainer_package_id']);
-        $sessionsCount = $package->sessions_count ?? max(1, (int) $validated['sessions_count']);
-        $pricePerSession = (float) ($package->price / max(1, $sessionsCount));
+        $sessionsCount = $package->sessions_count ?? (int) ($validated['sessions_count'] ?? 1);
+        $sessionsCount = max(1, $sessionsCount);
+        $pricePerSession = (float) ($package->price / $sessionsCount);
 
         $booking = TrainerBooking::create([
             'member_id' => $validated['member_id'],

@@ -14,7 +14,7 @@ class UserController extends Controller
     public function index()
     {
             $users = User::withTrashed()
-            ->select('id', 'name', 'email', 'phone', 'role', 'email_verified_at', 'notifications_enabled', 'created_at', 'updated_at', 'deleted_at')
+            ->select('id','user_id', 'name', 'email', 'phone', 'role', 'email_verified_at', 'notifications_enabled', 'created_at', 'updated_at', 'deleted_at')
             ->orderByDesc('created_at')
             ->get();
 
@@ -27,7 +27,7 @@ class UserController extends Controller
     public function deleted()
     {
         $users = User::onlyTrashed()
-            ->select('id', 'name', 'email','phone', 'role', 'email_verified_at', 'created_at', 'updated_at', 'deleted_at')
+            ->select('id', 'user_id',  'name', 'email','phone', 'role', 'email_verified_at', 'created_at', 'updated_at', 'deleted_at')
             ->orderByDesc('deleted_at')
             ->get();
 
@@ -40,6 +40,7 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
+            'user_id' => ['nullable', 'string', 'regex:/^\d{5}$/', 'unique:users,user_id'],
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'phone' => ['required_unless:role,administrator', 'nullable', 'string', 'max:20', 'unique:users,phone'],
@@ -53,6 +54,7 @@ class UserController extends Controller
             ],
             'role' => ['required', Rule::in(['administrator', 'trainer', 'user'])],
              ], [
+            'user_id.regex' => 'The user id must be exactly 5 digits.',
             'password.min' => 'The password must be at least 8 characters.',
             'password.letters' => 'The password must contain at least one letter.',
             'password.numbers' => 'The password must contain at least one number.',
@@ -61,12 +63,13 @@ class UserController extends Controller
 
         // ✅ HASH PASSWORD
         $data['password'] = Hash::make($data['password']);
+        $data['email_verified_at'] = now();
 
         $user = User::create($data);
 
         return response()->json([
             'message' => 'User created successfully',
-            'user' => $user->only(['id', 'name', 'email', 'phone', 'role', 'created_at']),
+            'user' => $user->only(['id','user_id',  'name', 'email', 'phone', 'role', 'created_at']),
         ], 201);
     }
 
@@ -77,6 +80,7 @@ class UserController extends Controller
         }
 
         $data = $request->validate([
+            'user_id' => ['sometimes', 'nullable', 'string', 'regex:/^\d{5}$/', Rule::unique('users', 'user_id')->ignore($user->id)],
             'name' => ['sometimes', 'string', 'max:255'],
             'email' => ['sometimes', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($user->id)],
             'phone' => ['sometimes', 'string', 'max:20', Rule::unique('users', 'phone')->ignore($user->id)],
@@ -91,7 +95,8 @@ class UserController extends Controller
             'role' => ['sometimes', Rule::in(['administrator', 'trainer', 'user'])],
             'notifications_enabled' => ['sometimes', 'boolean'],
              ], [
-            'password.min' => 'The password must be at least 8 characters.',
+            'user_id.regex' => 'The user id must be exactly 5 digits.',
+            'password.min' => 'The password must be at least 4 characters.',
             'password.letters' => 'The password must contain at least one letter.',
             'password.numbers' => 'The password must contain at least one number.',
             'password.symbols' => 'The password must contain at least one symbol.',
@@ -110,7 +115,7 @@ class UserController extends Controller
 
         return response()->json([
             'message' => 'User updated successfully',
-            'user' => $user->only(['id', 'name', 'email', 'phone', 'role', 'notifications_enabled', 'updated_at']),
+            'user' => $user->only(['id', 'user_id',  'name', 'email', 'phone', 'role', 'notifications_enabled', 'updated_at']),
         ]);
     }
 

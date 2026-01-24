@@ -22,6 +22,7 @@ class User extends Authenticatable
      */
 
     protected $fillable = [
+        'user_id',
         'name',
         'email',
         'phone',
@@ -73,6 +74,15 @@ class User extends Authenticatable
                 }
             }
         });
+
+        static::created(function ($user) {
+            if (! $user->user_id) {
+                $user->forceFill([
+                    'user_id' => str_pad((string) $user->id, 5, '0', STR_PAD_LEFT),
+                ])->saveQuietly();
+            }
+        });
+
 
         static::updating(function ($user) {
             // Prevent changing a non root user to administrator if one already exists

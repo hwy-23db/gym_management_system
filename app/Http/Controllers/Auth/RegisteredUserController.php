@@ -9,7 +9,6 @@ use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Validation\Rules\Password;
 use Illuminate\View\View;
 
 class RegisteredUserController extends Controller
@@ -35,10 +34,8 @@ class RegisteredUserController extends Controller
             'password' => [
                 'required',
                 'confirmed',
-                Password::min(8)
-                    ->letters()
-                    ->numbers()
-                    ->symbols(),
+                Password::min(4)
+                    ->letters(),
             ],
             'role' => ['required', 'in:trainer,user'],
             'captcha' => ['required', 'captcha', "digits:{$captchaLength}"],

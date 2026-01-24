@@ -55,6 +55,7 @@ class AuthController extends Controller
             'phone'    => $request->validated('phone'),
             'password' => $request->validated('password'),
             'role'     => $role,
+            'email_verified_at' => now(),
         ]);
 
         // Log registration for audit trail

@@ -22,8 +22,8 @@ return new class extends Migration
                 ->constrained()
                 ->cascadeOnDelete();
 
-            $table->timestamp('session_datetime');
-            $table->integer('duration_minutes')->default(60);
+            $table->unsignedBigInteger('trainer_package_id')->nullable();
+
             $table->integer('sessions_count')->default(1);
 
             $table->decimal('price_per_session', 10, 2);

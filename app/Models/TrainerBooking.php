@@ -15,8 +15,7 @@ class TrainerBooking extends Model
     protected $fillable = [
         'member_id',
         'trainer_id',
-        'session_datetime',
-        'duration_minutes',
+        'trainer_package_id',
         'sessions_count',
         'price_per_session',
         'total_price',
@@ -27,7 +26,6 @@ class TrainerBooking extends Model
     ];
 
     protected $casts = [
-        'session_datetime' => 'datetime',
         'paid_at' => 'datetime',
     ];
 
@@ -43,6 +41,10 @@ class TrainerBooking extends Model
         return $this->belongsTo(User::class, 'trainer_id');
     }
 
+    public function trainerPackage(): BelongsTo
+    {
+        return $this->belongsTo(TrainerPackage::class);
+    }
 
     public function getMemberPhoneAttribute(): ?string
     {

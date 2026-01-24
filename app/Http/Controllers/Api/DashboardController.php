@@ -122,7 +122,7 @@ class DashboardController extends Controller
             ->count());
 
         $trainerBookingCounts = $range->map(fn (Carbon $month) => TrainerBooking::query()
-            ->whereBetween('session_datetime', [$month, $month->copy()->endOfMonth()])
+            ->whereBetween('created_at', [$month, $month->copy()->endOfMonth()])
             ->count());
 
         return response()->json([

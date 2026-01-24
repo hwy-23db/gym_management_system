@@ -4,21 +4,18 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Models\TrainerBooking;
-use App\Models\TrainerPricing;
+use App\Models\TrainerPackage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 class TrainerBookingController extends Controller
 {
-    private const DEFAULT_PRICE_PER_SESSION = 30000;
-
     public function index()
     {
         $bookings = TrainerBooking::query()
-            ->with(['member', 'trainer'])
-            ->orderByDesc('session_datetime')
+            ->with(['member', 'trainer', 'trainerPackage'])
+            ->orderByDesc('created_at')
             ->get();
 
          $members = User::query()
@@ -31,17 +28,17 @@ class TrainerBookingController extends Controller
             ->orderBy('name')
             ->get();
 
-        $trainerPrices = TrainerPricing::query()
-            ->whereIn('trainer_id', $trainers->pluck('id'))
-            ->get()
-            ->keyBy('trainer_id');
+         $trainerPackages = TrainerPackage::query()
+            ->orderBy('package_type')
+            ->orderBy('sessions_count')
+            ->orderBy('duration_months')
+            ->get();
 
         return view('pages.trainer-bookings', [
             'bookings' => $bookings,
             'members' => $members,
             'trainers' => $trainers,
-            'trainerPrices' => $trainerPrices,
-            'defaultTrainerPrice' => self::DEFAULT_PRICE_PER_SESSION,
+            'trainerPackages' => $trainerPackages,
         ]);
     }
 
@@ -56,8 +53,7 @@ class TrainerBookingController extends Controller
                 'required',
                 Rule::exists('users', 'id')->where(fn ($query) => $query->where('role', 'trainer')),
             ],
-            'session_datetime' => ['required', 'date'],
-            'duration_minutes' => ['required', 'integer', 'min:1'],
+            'trainer_package_id' => ['required', Rule::exists('trainer_packages', 'id')],
             'sessions_count' => ['required', 'integer', 'min:1'],
             'price_per_session' => ['nullable', 'numeric', 'min:0'],
             'status' => ['required', 'string'],
@@ -65,17 +61,17 @@ class TrainerBookingController extends Controller
             'notes' => ['nullable', 'string'],
         ]);
 
-        $pricePerSession = $validated['price_per_session'] ?? $this->resolveTrainerPrice($validated['trainer_id']);
-        $sessionsCount = (int) $validated['sessions_count'];
+        $package = TrainerPackage::findOrFail($validated['trainer_package_id']);
+        $sessionsCount = $package->sessions_count ?? max(1, (int) $validated['sessions_count']);
+        $pricePerSession = (float) ($package->price / max(1, $sessionsCount));
 
         TrainerBooking::create([
             'member_id' => $validated['member_id'],
             'trainer_id' => $validated['trainer_id'],
-            'session_datetime' => $validated['session_datetime'],
-            'duration_minutes' => $validated['duration_minutes'],
+            'trainer_package_id' => $package->id,
             'sessions_count' => $sessionsCount,
             'price_per_session' => $pricePerSession,
-            'total_price' => $pricePerSession * $sessionsCount,
+            'total_price' => (float) $package->price,
             'status' => $validated['status'],
             'paid_status' => $validated['paid_status'],
             'paid_at' => $validated['paid_status'] === 'paid' ? now() : null,
@@ -97,12 +93,4 @@ class TrainerBookingController extends Controller
         return back()->with('status', 'Booking marked as paid.');
     }
 
-    private function resolveTrainerPrice(int $trainerId): float
-    {
-        $pricing = TrainerPricing::query()
-            ->where('trainer_id', $trainerId)
-            ->first();
-
-        return (float) ($pricing?->price_per_session ?? self::DEFAULT_PRICE_PER_SESSION);
-    }
 }

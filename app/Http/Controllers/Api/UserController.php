@@ -147,9 +147,9 @@ class UserController extends Controller
 
 
         $bookings = TrainerBooking::query()
-            ->with('trainer')
+            ->with(['trainer', 'trainerPackage'])
             ->where('member_id', $user->id)
-            ->orderByDesc('session_datetime')
+            ->orderByDesc('created_at')
             ->get()
             ->map(function (TrainerBooking $booking) {
                 return [
@@ -160,8 +160,16 @@ class UserController extends Controller
                         'phone' => $booking->trainer?->phone,
                         'email' => $booking->trainer?->email,
                     ],
-                    'session_datetime' => $booking->session_datetime?->toIso8601String(),
-                    'duration_minutes' => $booking->duration_minutes,
+                    'trainer_package' => $booking->trainerPackage
+                        ? [
+                            'id' => $booking->trainerPackage->id,
+                            'name' => $booking->trainerPackage->name,
+                            'package_type' => $booking->trainerPackage->package_type,
+                            'sessions_count' => $booking->trainerPackage->sessions_count,
+                            'duration_months' => $booking->trainerPackage->duration_months,
+                            'price' => (float) $booking->trainerPackage->price,
+                        ]
+                        : null,
                     'sessions_count' => $booking->sessions_count,
                     'status' => $booking->status,
                 ];

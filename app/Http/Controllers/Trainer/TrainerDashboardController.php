@@ -54,9 +54,9 @@ class TrainerDashboardController extends Controller
         $user = auth()->user();
 
         $bookings = TrainerBooking::query()
-            ->with('member')
+            ->with(['member', 'trainerPackage'])
             ->where('trainer_id', $user->id)
-            ->orderByDesc('session_datetime')
+            ->orderByDesc('created_at')
             ->get();
 
         return view('trainer.subscriptions', [

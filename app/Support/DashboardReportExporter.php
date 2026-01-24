@@ -19,7 +19,7 @@ class DashboardReportExporter
                 ->latest('start_date')
                 ->get(),
             'Trainer Bookings' => TrainerBooking::with(['member', 'trainer'])
-                ->latest('session_datetime')
+                ->latest('created_at')
                 ->get(),
             'Attendance Scans' => AttendanceScan::with('user')
                 ->latest('scanned_at')

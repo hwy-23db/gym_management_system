@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -14,7 +15,9 @@ return new class extends Migration
             return;
         }
 
-        DB::statement('ALTER TABLE trainer_bookings MODIFY session_datetime DATETIME NOT NULL');
+        if (Schema::hasColumn('trainer_bookings', 'session_datetime')) {
+            DB::statement('ALTER TABLE trainer_bookings MODIFY session_datetime DATETIME NOT NULL');
+        }
     }
 
     /**
@@ -26,6 +29,8 @@ return new class extends Migration
             return;
         }
 
-        DB::statement('ALTER TABLE trainer_bookings MODIFY session_datetime TIMESTAMP NOT NULL');
+        if (Schema::hasColumn('trainer_bookings', 'session_datetime')) {
+            DB::statement('ALTER TABLE trainer_bookings MODIFY session_datetime TIMESTAMP NOT NULL');
+        }
     }
 };

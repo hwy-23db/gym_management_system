@@ -90,9 +90,9 @@ class TrainerController extends Controller
         $user = $request->user();
 
         $bookings = TrainerBooking::query()
-            ->with('member')
+            ->with(['member', 'trainerPackage'])
             ->where('trainer_id', $user->id)
-            ->orderByDesc('session_datetime')
+            ->orderByDesc('created_at')
             ->get()
             ->map(function (TrainerBooking $booking) {
                 return [
@@ -103,8 +103,16 @@ class TrainerController extends Controller
                         'email' => $booking->member?->email,
                         'phone' => $booking->member?->phone,
                     ],
-                    'session_datetime' => $booking->session_datetime?->toIso8601String(),
-                    'duration_minutes' => $booking->duration_minutes,
+                    'trainer_package' => $booking->trainerPackage
+                        ? [
+                            'id' => $booking->trainerPackage->id,
+                            'name' => $booking->trainerPackage->name,
+                            'package_type' => $booking->trainerPackage->package_type,
+                            'sessions_count' => $booking->trainerPackage->sessions_count,
+                            'duration_months' => $booking->trainerPackage->duration_months,
+                            'price' => (float) $booking->trainerPackage->price,
+                        ]
+                        : null,
                     'sessions_count' => $booking->sessions_count,
                     'status' => $booking->status,
                     'paid_status' => $booking->paid_status,

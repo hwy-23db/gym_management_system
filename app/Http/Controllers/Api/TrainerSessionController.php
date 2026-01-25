@@ -74,7 +74,7 @@ class TrainerSessionController extends Controller
 
                 return [
                     'status' => 200,
-                    'message' => 'Session confirmation started. Share the token to complete.',
+                    'message' => 'Session confirmation started. Token generated for this session.',
                     'token' => $confirmation->token,
                     'sessions_remaining' => $lockedBooking->sessions_remaining,
                     'sessions_count' => $lockedBooking->sessions_count,
@@ -84,15 +84,7 @@ class TrainerSessionController extends Controller
             }
 
             if (! $token) {
-                return [
-                    'status' => 422,
-                    'message' => 'A token is required to confirm this session.',
-                    'token' => $confirmation->token,
-                    'sessions_remaining' => $lockedBooking->sessions_remaining,
-                    'sessions_count' => $lockedBooking->sessions_count,
-                    'booking_status' => $lockedBooking->status,
-                    'completed' => false,
-                ];
+                 $token = $confirmation->token;
             }
 
             if (! hash_equals($confirmation->token, $token)) {

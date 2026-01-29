@@ -121,7 +121,7 @@ Route::middleware('auth:sanctum')->group(function () {
         // Send password reset link to a user
         Route::post('/users/forgot-password', [AuthController::class, 'sendPasswordResetLink']);
 
-        // Delete a user (soft delete)
+        // Delete a user (permanent delete)
         Route::delete('/users/{id}', [AuthController::class, 'destroy']);
 
         // Update a user

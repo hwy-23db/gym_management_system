@@ -12,6 +12,7 @@ use App\Http\Requests\Api\UpdateProfileRequest;
 use App\Http\Requests\Api\UpdateUserRequest;
 use Illuminate\Http\Request;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Mail\EmailVerificationCodeMail;
 use Illuminate\Support\Facades\Mail;
@@ -355,7 +356,7 @@ class AuthController extends Controller
         // Find the user by user_id or email
         $user = null;
         if ($request->has('user_id')) {
-            $user = User::find($request->validated('user_id'));
+            $user = User::where('user_id', $request->validated('user_id'))->first();
         } else {
             $user = User::where('email', $request->validated('email'))->first();
         }
@@ -427,7 +428,7 @@ class AuthController extends Controller
             ], 400);
         }
 
-        $user = User::find($id);
+        $user = $this->resolveUser($id);
 
         if (!$user) {
             return response()->json([
@@ -456,8 +457,10 @@ class AuthController extends Controller
             'role' => $user->role,
         ];
 
-        // Delete the user
-        $user->delete();
+        DB::table('sessions')->where('user_id', $user->id)->delete();
+
+        // Delete the user permanently
+        $user->forceDelete();
 
         // Log the deletion for audit trail
         Log::info('User deleted by administrator', [
@@ -470,9 +473,8 @@ class AuthController extends Controller
         ]);
 
         return response()->json([
-            'message' => 'User deleted successfully (soft delete). User can be restored.',
+            'message' => 'User permanently deleted successfully.',
             'deleted_user' => $deletedUserInfo,
-            'deleted_at' => $user->deleted_at
         ], 200);
     }
 
@@ -489,7 +491,7 @@ class AuthController extends Controller
             ], 400);
         }
 
-        $user = User::withTrashed()->find($id);
+        $user = $this->resolveUser($id, true);
 
         if (!$user) {
             return response()->json([
@@ -509,11 +511,7 @@ class AuthController extends Controller
             ], 403);
         }
 
-        if (!$user->trashed()) {
-            return response()->json([
-                'message' => 'User must be soft deleted before permanent deletion.'
-            ], 400);
-        }
+        DB::table('sessions')->where('user_id', $user->id)->delete();
 
         $deletedUserInfo = [
             'id' => $user->id,
@@ -554,7 +552,7 @@ class AuthController extends Controller
             ], 400);
         }
 
-        $user = User::find($id);
+        $user = $this->resolveUser($id);
 
         if (!$user) {
             return response()->json([
@@ -674,7 +672,7 @@ class AuthController extends Controller
         }
 
         // Find user including soft deleted users
-        $user = User::withTrashed()->find($id);
+        $user = $this->resolveUser($id, true);
 
         if (!$user) {
             return response()->json([
@@ -736,5 +734,30 @@ class AuthController extends Controller
                 'restored_at' => now(),
             ]
         ], 200);
+    }
+
+    private function resolveUser($identifier, bool $withTrashed = false): ?User
+    {
+        $query = User::query();
+
+        if ($withTrashed) {
+            $query->withTrashed();
+        }
+
+        $identifier = (string) $identifier;
+
+        if (preg_match('/^\d{5}$/', $identifier)) {
+            $user = $query->where('user_id', $identifier)->first();
+
+            if ($user) {
+                return $user;
+            }
+        }
+
+        if (is_numeric($identifier)) {
+            return $query->find((int) $identifier);
+        }
+
+        return null;
     }
 }

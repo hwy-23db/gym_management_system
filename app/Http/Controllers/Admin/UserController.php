@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
@@ -74,8 +75,14 @@ class UserController extends Controller
         ], 201);
     }
 
-    public function update(Request $request, User $user)
+    public function update(Request $request, $id)
     {
+        $user = $this->resolveUser($id);
+
+        if (!$user) {
+            return response()->json(['message' => 'The specified user does not exist.'], 404);
+        }
+
         if ($user->role === 'administrator') {
             return response()->json(['message' => 'Administrator account cannot be modified.'], 403);
         }
@@ -121,30 +128,37 @@ class UserController extends Controller
     }
 
     public function destroy($id)
+    {
+        $user = $this->resolveUser($id, true);
 
-   {
-        $user = User::findOrFail($id);
+        if (!$user) {
+            return response()->json(['message' => 'The specified user does not exist.'], 404);
+        }
 
         if ($user->role === 'administrator') {
             return response()->json(['message' => 'Administrator account cannot be deleted.'], 403);
         }
 
-    $user->delete(); // soft delete
-        return response()->json(['message' => 'User soft deleted successfully']);
+        DB::table('sessions')->where('user_id', $user->id)->delete();
+
+        $user->forceDelete();
+        return response()->json(['message' => 'User permanently deleted successfully']);
     }
 
     public function forceDestroy($id)
     {
-        $user = User::withTrashed()->findOrFail($id);
+        $user = $this->resolveUser($id, true);
+
+        if (!$user) {
+            return response()->json(['message' => 'The specified user does not exist.'], 404);
+        }
 
         if ($user->role === 'administrator') {
             return response()->json(['message' => 'Administrator account cannot be deleted.'], 403);
         }
 
 
-    if (!$user->trashed()) {
-            return response()->json(['message' => 'User must be soft deleted before permanent deletion.'], 400);
-        }
+        DB::table('sessions')->where('user_id', $user->id)->delete();
 
         $user->forceDelete();
 
@@ -153,7 +167,11 @@ class UserController extends Controller
 
     public function restore($id)
     {
-        $user = User::withTrashed()->findOrFail($id);
+        $user = $this->resolveUser($id, true);
+
+        if (!$user) {
+            return response()->json(['message' => 'The specified user does not exist.'], 404);
+        }
 
         if ($user->role === 'administrator') {
             return response()->json(['message' => 'Administrator account cannot be restored here.'], 403);
@@ -165,6 +183,31 @@ class UserController extends Controller
 
         $user->restore();
         return response()->json(['message' => 'User restored successfully']);
+    }
+
+    private function resolveUser($identifier, bool $withTrashed = false): ?User
+    {
+        $query = User::query();
+
+        if ($withTrashed) {
+            $query->withTrashed();
+        }
+
+        $identifier = (string) $identifier;
+
+        if (preg_match('/^\d{5}$/', $identifier)) {
+            $user = $query->where('user_id', $identifier)->first();
+
+            if ($user) {
+                return $user;
+            }
+        }
+
+        if (is_numeric($identifier)) {
+            return $query->find((int) $identifier);
+        }
+
+        return null;
     }
 
 }

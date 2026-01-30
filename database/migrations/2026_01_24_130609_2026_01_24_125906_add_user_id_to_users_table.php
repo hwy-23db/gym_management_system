@@ -12,21 +12,25 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->string('user_id', 5)->nullable()->unique()->after('id');
-        });
-
-        DB::table('users')
-            ->select('id')
-            ->whereNull('user_id')
-            ->orderBy('id')
-            ->chunkById(100, function ($users) {
-                foreach ($users as $user) {
-                    DB::table('users')
-                        ->where('id', $user->id)
-                        ->update(['user_id' => str_pad((string) $user->id, 5, '0', STR_PAD_LEFT)]);
-                }
+        if (! Schema::hasColumn('users', 'user_id')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->string('user_id', 5)->nullable()->unique()->after('id');
             });
+        }
+
+        if (Schema::hasColumn('users', 'user_id')) {
+            DB::table('users')
+                ->select('id')
+                ->whereNull('user_id')
+                ->orderBy('id')
+                ->chunkById(100, function ($users) {
+                    foreach ($users as $user) {
+                        DB::table('users')
+                            ->where('id', $user->id)
+                            ->update(['user_id' => str_pad((string) $user->id, 5, '0', STR_PAD_LEFT)]);
+                    }
+                });
+        }
     }
 
     /**

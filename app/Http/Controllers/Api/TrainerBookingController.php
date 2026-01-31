@@ -120,6 +120,9 @@ class TrainerBookingController extends Controller
         $sessionsCount = max(1, $sessionsCount);
         $pricePerSession = (float) ($package->price / $sessionsCount);
 
+        $status = $validated['status'] ?? 'confirmed';
+        $paidStatus = $validated['paid_status'] ?? 'unpaid';
+
         $booking = TrainerBooking::create([
             'member_id' => $validated['member_id'],
             'trainer_id' => $validated['trainer_id'],
@@ -135,9 +138,9 @@ class TrainerBookingController extends Controller
             'price_per_session' => $pricePerSession,
             'sessions_remaining' => $sessionsCount,
             'total_price' => (float) $package->price,
-            'status' => $validated['status'] ?? 'confirmed',
-            'paid_status' => $validated['paid_status'] ?? 'unpaid',
-            'paid_at' => $validated['paid_status'] === 'paid' ? now() : null,
+            'status' => $status,
+            'paid_status' => $paidStatus,
+            'paid_at' => $paidStatus === 'paid' ? now() : null,
             'notes' => $validated['notes'] ?? null,
         ]);
 

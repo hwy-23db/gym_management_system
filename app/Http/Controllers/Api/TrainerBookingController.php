@@ -113,7 +113,7 @@ class TrainerBookingController extends Controller
         ]);
 
         $package = TrainerPackage::findOrFail($validated['trainer_package_id']);
-        $isMonthBased = $package->package_type === 'monthly';
+        $isMonthBased = strtolower((string) $package->package_type) === 'monthly';
         $startDate = Carbon::parse($validated['start_date']);
         $endDate = Carbon::parse($validated['end_date']);
         $sessionsCount = $package->sessions_count ?? (int) ($validated['sessions_count'] ?? 1);
@@ -138,7 +138,7 @@ class TrainerBookingController extends Controller
             'status' => $validated['status'] ?? 'confirmed',
             'paid_status' => $validated['paid_status'] ?? 'unpaid',
             'paid_at' => $validated['paid_status'] === 'paid' ? now() : null,
-            'notes' => $validated['notes'],
+            'notes' => $validated['notes'] ?? null,
         ]);
 
         return response()->json([

@@ -78,7 +78,7 @@ class TrainerBookingController extends Controller
             'status' => $validated['status'],
             'paid_status' => $validated['paid_status'],
             'paid_at' => $validated['paid_status'] === 'paid' ? now() : null,
-            'notes' => $validated['notes'],
+            'notes' => $validated['notes'] ?? null,
         ]);
 
         return back()->with('status', 'Trainer booking created.');

@@ -78,7 +78,7 @@ class TrainerBooking extends Model
 
     public function isMonthBased(): bool
     {
-        return $this->trainerPackage?->package_type === 'monthly';
+        return strtolower((string) $this->trainerPackage?->package_type) === 'monthly';
     }
 
     public function isSessionBased(): bool

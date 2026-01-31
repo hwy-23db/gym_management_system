@@ -64,13 +64,16 @@ class TrainerPackageController extends Controller
     {
         $requiredRule = $isUpdate ? 'sometimes' : 'required';
 
-        return $request->validate([
+         $validated = $request->validate([
             'name' => [$requiredRule, 'string', 'max:255'],
             'package_type' => [$requiredRule, 'string', 'max:100'],
             'sessions_count' => [$requiredRule, 'nullable', 'integer', 'min:1', 'required_without:duration_months'],
             'duration_months' => [$requiredRule, 'nullable', 'integer', 'min:1', 'required_without:sessions_count'],
             'price' => [$requiredRule, 'numeric', 'min:0'],
         ]);
+        $validated['package_type'] = strtolower((string) ($validated['package_type'] ?? ''));
+
+        return $validated;
     }
 
     private function formatPackage(TrainerPackage $package): array

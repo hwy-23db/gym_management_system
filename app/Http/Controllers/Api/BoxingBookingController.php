@@ -150,7 +150,7 @@ class BoxingBookingController extends Controller
             'paid_status' => $paidStatus,
             'paid_at' => $paidStatus === 'paid' ? now() : null,
             'notes' => $validated['notes'] ?? null,
-                ];
+        ];
 
         try {
             $booking = BoxingBooking::create($payload);
@@ -159,6 +159,7 @@ class BoxingBookingController extends Controller
                 'message' => 'Unable to create boxing booking. Verify database schema and data.',
                 'error' => config('app.debug') ? $exception->getMessage() : null,
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
 
         return response()->json([
             'message' => 'Boxing booking created successfully.',

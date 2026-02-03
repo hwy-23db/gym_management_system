@@ -15,11 +15,11 @@ return new class extends Migration
             $table->id();
 
             $table->foreignId('member_id')
-                ->constrained()
+                ->constrained('users')
                 ->cascadeOnDelete();
 
             $table->foreignId('trainer_id')
-                ->constrained()
+                ->constrained('users')
                 ->cascadeOnDelete();
 
             $table->unsignedBigInteger('boxing_package_id')->nullable();

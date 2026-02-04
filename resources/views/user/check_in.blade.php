@@ -192,9 +192,13 @@
         const recentActivity = document.getElementById('recent-activity');
 
         const baseScanUrl = '{{ url('/attendance/scan') }}';
+        const rfidScanUrl = '{{ url('/api/attendance/rfid/scan') }}';
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
         let html5QrCode = null;
         let cameras = [];
         let currentCameraIndex = 0;
+        let rfidBuffer = '';
+        let rfidBufferTimer = null;
 
         const statusStyles = {
             check_in: {
@@ -308,6 +312,46 @@
             setFeedback(data.message || 'Scan recorded successfully.', 'success');
             setStatus(data.record.action);
             prependActivity(data.record.action, data.record.timestamp);
+        };
+
+        const recordRfidScan = async (cardId) => {
+            const normalizedCardId = String(cardId || '').trim();
+
+            if (!normalizedCardId) {
+                setFeedback('Please provide a card ID.', 'error');
+                return;
+            }
+
+            setFeedback('Recording scan...', 'info');
+
+            const response = await fetch(rfidScanUrl, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    ...(csrfToken ? { 'X-CSRF-TOKEN': csrfToken } : {}),
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({ card_id: normalizedCardId }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                if (data?.message?.includes('Card not registered')) {
+                    alert('Card not registered. Please contact the front desk to register your RFID card.');
+                    return;
+                }
+                throw new Error(data.message || 'Unable to record scan.');
+            }
+
+            setFeedback(data.message || 'Scan recorded successfully.', 'success');
+
+            if (data.record?.action) {
+                setStatus(data.record.action);
+                prependActivity(data.record.action, data.record.timestamp);
+            }
         };
 
         const setActivePanel = (mode) => {
@@ -445,6 +489,70 @@
 
             await recordScan(normalized.token);
         };
+
+        const resetRfidBuffer = () => {
+            rfidBuffer = '';
+            if (rfidBufferTimer) {
+                clearTimeout(rfidBufferTimer);
+                rfidBufferTimer = null;
+            }
+        };
+
+        const shouldCaptureRfidInput = () => {
+            const activeElement = document.activeElement;
+            if (!activeElement) {
+                return true;
+            }
+
+            const tagName = activeElement.tagName;
+            return !['INPUT', 'TEXTAREA', 'SELECT'].includes(tagName) && !activeElement.isContentEditable;
+        };
+
+        const handleRfidScan = async (cardId) => {
+            try {
+                await recordRfidScan(cardId);
+            } catch (error) {
+                setFeedback(error.message, 'error');
+            }
+        };
+
+        document.addEventListener('keydown', (event) => {
+            if (!shouldCaptureRfidInput()) {
+                return;
+            }
+
+            if (event.key === 'Enter') {
+                if (!rfidBuffer) {
+                    return;
+                }
+
+                const cardId = rfidBuffer;
+                resetRfidBuffer();
+                handleRfidScan(cardId);
+                return;
+            }
+
+            if (event.key.length === 1) {
+                rfidBuffer += event.key;
+
+                if (rfidBufferTimer) {
+                    clearTimeout(rfidBufferTimer);
+                }
+
+                rfidBufferTimer = setTimeout(() => {
+                    rfidBuffer = '';
+                }, 500);
+            }
+        });
+
+        window.addEventListener('rfid-scan', (event) => {
+            const cardId = event.detail?.card_id ?? event.detail;
+            if (!cardId) {
+                return;
+            }
+
+            handleRfidScan(cardId);
+        });
 
         scanButtons.forEach((button) => {
             button.addEventListener('click', () => {

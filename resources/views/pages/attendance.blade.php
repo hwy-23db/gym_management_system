@@ -237,12 +237,16 @@
         const totalMembers = document.getElementById('total-members');
         const activeMembers = document.getElementById('active-members');
         const checkedInTable = document.getElementById('checked-in-table');
+        const rfidScanUrl = '{{ url('/api/attendance/rfid/scan') }}';
+        const rfidRegisterUrl = '{{ url('/api/attendance/rfid/register') }}';
         const refreshQrButton = document.getElementById('qr-refresh-button');
         const memberQrImage = document.getElementById('member-qr-image');
         const trainerQrImage = document.getElementById('trainer-qr-image');
         const memberQrLink = document.getElementById('member-qr-link');
         const trainerQrLink = document.getElementById('trainer-qr-link');
         const qrBaseUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=';
+        let rfidBuffer = '';
+        let rfidBufferTimer = null;
         const formatTimestamp = (isoString) => {
             const date = new Date(isoString);
             return date.toLocaleString('en-US', {
@@ -344,6 +348,77 @@
             scanMessage.textContent = message;
         };
 
+        const registerRfidCard = async (cardId) => {
+            if (!scanUser.value) {
+                setScanMessage('Select a user before registering a card.', 'error');
+                return;
+            }
+
+            const response = await fetch(rfidRegisterUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({
+                    user_id: scanUser.value,
+                    card_id: String(cardId).trim(),
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                setScanMessage(data.message || 'Unable to register the RFID card.', 'error');
+                return;
+            }
+
+            setScanMessage(data.message || 'Card registered successfully.', 'success');
+        };
+
+        const recordRfidScan = async (cardId) => {
+            const normalizedCardId = String(cardId || '').trim();
+
+            if (!normalizedCardId) {
+                setScanMessage('Please provide a card ID.', 'error');
+                return;
+            }
+
+            setScanMessage('Recording scan...', 'info');
+
+            const response = await fetch(rfidScanUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({ card_id: normalizedCardId }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                if (data?.message?.includes('Card not registered')) {
+                    const shouldRegister = confirm('Card not registered. Register this card to the selected user?');
+                    if (shouldRegister) {
+                        await registerRfidCard(normalizedCardId);
+                    } else {
+                        setScanMessage('Card not registered.', 'error');
+                    }
+                    return;
+                }
+
+                setScanMessage(data.message || 'Unable to record scan.', 'error');
+                return;
+            }
+
+            setScanMessage(data.message || 'Scan recorded successfully.', 'success');
+            fetchAttendance();
+            fetchCheckedIn();
+        };
+
         const filterUsersByRole = () => {
             const role = scanQrType.value;
             const options = attendanceUsers.filter((user) => user.role === role);
@@ -417,6 +492,66 @@
             setScanMessage(data.message, 'success');
             fetchAttendance();
             fetchCheckedIn();
+        });
+
+        const resetRfidBuffer = () => {
+            rfidBuffer = '';
+            if (rfidBufferTimer) {
+                clearTimeout(rfidBufferTimer);
+                rfidBufferTimer = null;
+            }
+        };
+
+        const shouldCaptureRfidInput = () => {
+            const activeElement = document.activeElement;
+            if (!activeElement) {
+                return true;
+            }
+
+            const tagName = activeElement.tagName;
+            return !['INPUT', 'TEXTAREA', 'SELECT'].includes(tagName) && !activeElement.isContentEditable;
+        };
+
+        const handleRfidScan = async (cardId) => {
+            await recordRfidScan(cardId);
+        };
+
+        document.addEventListener('keydown', (event) => {
+            if (!shouldCaptureRfidInput()) {
+                return;
+            }
+
+            if (event.key === 'Enter') {
+                if (!rfidBuffer) {
+                    return;
+                }
+
+                const cardId = rfidBuffer;
+                resetRfidBuffer();
+                handleRfidScan(cardId);
+                return;
+            }
+
+            if (event.key.length === 1) {
+                rfidBuffer += event.key;
+
+                if (rfidBufferTimer) {
+                    clearTimeout(rfidBufferTimer);
+                }
+
+                rfidBufferTimer = setTimeout(() => {
+                    rfidBuffer = '';
+                }, 500);
+            }
+        });
+
+        window.addEventListener('rfid-scan', (event) => {
+            const cardId = event.detail?.card_id ?? event.detail;
+            if (!cardId) {
+                return;
+            }
+
+            handleRfidScan(cardId);
         });
 
         refreshQrButton.addEventListener('click', async () => {

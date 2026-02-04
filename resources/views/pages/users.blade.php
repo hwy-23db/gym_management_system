@@ -86,6 +86,10 @@
                             <input id="create-password" type="password" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100">
                         </div>
                         <div>
+                            <label class="block text-sm font-medium" for="create-card-id">Card ID (optional)</label>
+                            <input id="create-card-id" type="text" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100">
+                        </div>
+                        <div>
                             <label class="block text-sm font-medium" for="create-role">Role</label>
                             <select id="create-role" class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100">
                                 <option value="administrator">administrator</option>
@@ -283,6 +287,7 @@
 
         document.getElementById('create-user-form').addEventListener('submit', async (event) => {
             event.preventDefault();
+            const cardId = document.getElementById('create-card-id').value.trim();
             const payload = {
                 name: document.getElementById('create-name').value.trim(),
                 email: document.getElementById('create-email').value.trim(),
@@ -290,6 +295,10 @@
                 password: document.getElementById('create-password').value,
                 role: document.getElementById('create-role').value,
             };
+
+            if (cardId) {
+                payload.card_id = cardId;
+            }
 
             await apiFetch('/admin/users', {
                 method: 'POST',

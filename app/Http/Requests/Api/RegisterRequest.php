@@ -39,6 +39,7 @@ class RegisterRequest extends FormRequest
 
             ],
             'password_confirmation' => ['required', 'string'],
+            'card_id' => ['nullable', 'string', 'max:255', 'unique:users,card_id'],
              // Administrator can create trainer or user roles
             'role' => ['required', 'in:trainer,user'],
         ];

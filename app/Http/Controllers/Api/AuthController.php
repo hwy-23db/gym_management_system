@@ -57,6 +57,7 @@ class AuthController extends Controller
             'phone'    => $request->validated('phone'),
             'password' => $request->validated('password'),
             'role'     => $role,
+            'card_id' => $request->validated('card_id'),
             'email_verified_at' => now(),
         ]);
 

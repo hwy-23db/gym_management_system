@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\AttendanceScan;
 use App\Models\RfidAttendance;
 use App\Models\User;
 use Carbon\Carbon;
@@ -92,6 +93,12 @@ class RfidAttendanceController extends Controller
                     'source' => 'rfid',
                 ]);
 
+                AttendanceScan::create([
+                    'user_id' => $user->id,
+                    'action' => 'check_in',
+                    'scanned_at' => $now,
+                ]);
+
                 return [
                     'action' => 'check_in',
                     'attendance' => $attendance,
@@ -102,6 +109,12 @@ class RfidAttendanceController extends Controller
                 $attendance->forceFill([
                     'check_out_time' => $now,
                 ])->save();
+
+                AttendanceScan::create([
+                    'user_id' => $user->id,
+                    'action' => 'check_out',
+                    'scanned_at' => $now,
+                ]);
 
                 return [
                     'action' => 'check_out',

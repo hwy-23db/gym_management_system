@@ -16,6 +16,8 @@ use Illuminate\Validation\Rule;
 class SubscriptionController extends Controller
 {
 
+    private const CLASS_PLAN_NAME = 'Class';
+    private const CLASS_MIN_DAYS = 30 ;
     private const ANNUAL_PLAN_MIN_DAYS = 360;
     private const SIX_MONTH_PLAN_MIN_DAYS = 180;
     private const THREE_MONTH_PLAN_MIN_DAYS = 90;
@@ -34,6 +36,7 @@ class SubscriptionController extends Controller
         $pricingSetting = PricingSetting::query()->firstOrCreate(
             [],
             [
+                'class_subscription_price' => 70000,
                 'monthly_subscription_price' => 80000,
                 'three_month_subscription_price' => 240000,
                 'quarterly_subscription_price' => 400000,
@@ -88,6 +91,7 @@ class SubscriptionController extends Controller
         $pricingSetting = PricingSetting::query()->firstOrCreate(
             [],
             [
+                'class_subscription_price' => 70000,
                 'monthly_subscription_price' => 80000,
                 'three_month_subscription_price' => 240000,
                 'quarterly_subscription_price' => 400000,
@@ -221,6 +225,12 @@ class SubscriptionController extends Controller
     {
         $definitions = [
             [
+
+                'name' => self::CLASS_PLAN_NAME,
+                'duration_days' => self::CLASS_MIN_DAYS,
+                'price' => (float) $pricingSetting->class_subscription_price,
+            ],
+            [
                 'name' => '1 Month',
                 'duration_days' => self::MONTHLY_PLAN_MIN_DAYS,
                 'price' => (float) $pricingSetting->monthly_subscription_price,
@@ -239,6 +249,11 @@ class SubscriptionController extends Controller
                 'name' => '12 Months',
                 'duration_days' => self::ANNUAL_PLAN_MIN_DAYS,
                 'price' => (float) $pricingSetting->annual_subscription_price,
+            ],
+            [
+                'name' => 'Class',
+                'duration_days' => self::CLASS_DAYS,
+                'price' => (float) $pricingSetting->class_price,
             ],
         ];
 

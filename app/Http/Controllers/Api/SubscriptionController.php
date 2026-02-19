@@ -225,7 +225,6 @@ class SubscriptionController extends Controller
     {
         $definitions = [
             [
-
                 'name' => self::CLASS_PLAN_NAME,
                 'duration_days' => self::CLASS_MIN_DAYS,
                 'price' => (float) $pricingSetting->class_subscription_price,
@@ -249,11 +248,6 @@ class SubscriptionController extends Controller
                 'name' => '12 Months',
                 'duration_days' => self::ANNUAL_PLAN_MIN_DAYS,
                 'price' => (float) $pricingSetting->annual_subscription_price,
-            ],
-            [
-                'name' => 'Class',
-                'duration_days' => self::CLASS_DAYS,
-                'price' => (float) $pricingSetting->class_price,
             ],
         ];
 

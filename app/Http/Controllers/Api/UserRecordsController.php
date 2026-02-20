@@ -15,13 +15,19 @@ class UserRecordsController extends Controller
             $user = User::findOrFail($id);
             $isTrainer = $user->role === 'trainer';
             $user->load([
-                'subscriptions',
-                    $isTrainer
+            'subscriptions.plan:id,name',
+                $isTrainer
                     ? 'trainerAssignments.member:id,name,email,phone'
                     : 'trainerBookings.trainer:id,name,email,phone',
                 $isTrainer
+                    ? 'trainerAssignments.trainerPackage:id,name,package_type'
+                    : 'trainerBookings.trainerPackage:id,name,package_type',
+                $isTrainer
                     ? 'boxingAssignments.member:id,name,email,phone'
                     : 'boxingBookings.trainer:id,name,email,phone',
+                $isTrainer
+                    ? 'boxingAssignments.boxingPackage:id,name,package_type'
+                    : 'boxingBookings.boxingPackage:id,name,package_type',
             ]);
         } catch (ModelNotFoundException $exception) {
             return response()->json(['message' => 'User not found.'], 404);
@@ -44,9 +50,26 @@ class UserRecordsController extends Controller
                 'phone' => $user->phone,
                 'role' => $user->role,
             ],
-            'subscriptions' => $user->subscriptions,
-            'trainer_bookings' => $trainerBookings,
-            'boxing_bookings' => $boxingBookings,
+            'subscriptions' => $user->subscriptions->map(function ($subscription) {
+                return [
+                    ...$subscription->toArray(),
+                    'plan_name' => $subscription->plan?->name,
+                ];
+            })->values(),
+            'trainer_bookings' => $trainerBookings->map(function ($booking) {
+                return [
+                    ...$booking->toArray(),
+                    'package_name' => $booking->trainerPackage?->name,
+                    'package_type' => $booking->trainerPackage?->package_type,
+                ];
+            })->values(),
+            'boxing_bookings' => $boxingBookings->map(function ($booking) {
+                return [
+                    ...$booking->toArray(),
+                    'package_name' => $booking->boxingPackage?->name,
+                    'package_type' => $booking->boxingPackage?->package_type,
+                ];
+            })->values(),
         ]);
     }
 }

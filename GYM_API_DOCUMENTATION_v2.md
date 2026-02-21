@@ -1036,6 +1036,24 @@ GET /captcha/api/default
 
 ---
 
+
+## Additional API Features (Newly Documented)
+
+The following routes are active in `routes/api.php` and are now included in this documentation matrix:
+
+- **Notifications + direct user messaging**: `/notifications/*`, `/my/messages`.
+- **Admin user management extensions**: `/users/{id}/records`, `/users/{id}` (`PUT/PATCH`), `/users/{id}/force`.
+- **Admin blog management**: `POST/PUT/PATCH/DELETE /blogs*`.
+- **Pricing model endpoints**: `/pricing`, `/pricing/one-month`, `/pricing/three-months`, `/pricing/six-months`, `/pricing/twelve-months`, `/pricing/class`, `/pricing/trainers/{user}`.
+- **Trainer booking extensions**: `/trainer-bookings/options`, session updates, hold/resume, mark-active/mark-hold.
+- **Boxing bookings**: full admin CRUD-like flow for booking lifecycle + payment/hold/session updates.
+- **Trainer and boxing packages**: `/trainer-packages/*` and `/boxing-packages/*`.
+- **RFID attendance**: `/attendance/rfid/scan` (authenticated) and `/attendance/rfid/register` (admin).
+- **Dashboard growth**: `/dashboard/growth-summary`.
+- **Trainer + user booking confirmations**: both regular and boxing booking confirm routes.
+
+---
+
 ## Errors
 
 | Status | Meaning |
@@ -1081,20 +1099,59 @@ GET /captcha/api/default
 | POST | `/my/messages` | Auth |
 | GET | `/users` | Admin |
 | POST | `/users/forgot-password` | Admin |
+| GET | `/users/{id}/records` | Admin |
+| PUT | `/users/{id}` | Admin |
+| PATCH | `/users/{id}` | Admin |
 | DELETE | `/users/{id}` | Admin |
 | POST | `/users/{id}/restore` | Admin |
-| PUT | `/pricing/monthly` | Admin |
-| PUT | `/pricing/quarterly` | Admin |
-| PUT | `/pricing/annual` | Admin |
+| DELETE | `/users/{id}/force` | Admin |
+| POST | `/blogs` | Admin |
+| PUT | `/blogs/{blog}` | Admin |
+| PATCH | `/blogs/{blog}` | Admin |
+| DELETE | `/blogs/{blog}` | Admin |
+| GET | `/pricing` | Admin |
+| PUT | `/pricing/one-month` | Admin |
+| PUT | `/pricing/three-months` | Admin |
+| PUT | `/pricing/six-months` | Admin |
+| PUT | `/pricing/twelve-months` | Admin |
+| PUT | `/pricing/class` | Admin |
 | PUT | `/pricing/trainers/{user}` | Admin |
 | GET | `/trainer-bookings` | Admin |
+| GET | `/trainer-bookings/options` | Admin |
 | POST | `/trainer-bookings` | Admin |
 | PATCH | `/trainer-bookings/{booking}/mark-paid` | Admin |
+| PATCH | `/trainer-bookings/session/{booking}/sessions` | Admin |
+| PATCH | `/trainer-bookings/{booking}/hold` | Admin |
+| PATCH | `/trainer-bookings/{booking}/resume` | Admin |
+| PATCH | `/trainer-bookings/{booking}/mark-active` | Admin |
+| PATCH | `/trainer-bookings/{booking}/mark-hold` | Admin |
+| GET | `/boxing-bookings` | Admin |
+| GET | `/boxing-bookings/options` | Admin |
+| POST | `/boxing-bookings` | Admin |
+| PATCH | `/boxing-bookings/{booking}/mark-paid` | Admin |
+| PATCH | `/boxing-bookings/session/{booking}/sessions` | Admin |
+| PATCH | `/boxing-bookings/{booking}/hold` | Admin |
+| PATCH | `/boxing-bookings/{booking}/resume` | Admin |
+| PATCH | `/boxing-bookings/{booking}/mark-active` | Admin |
+| PATCH | `/boxing-bookings/{booking}/mark-hold` | Admin |
+| GET | `/trainer-packages` | Admin |
+| GET | `/trainer-packages/{trainerPackage}` | Admin |
+| POST | `/trainer-packages` | Admin |
+| PUT | `/trainer-packages/{trainerPackage}` | Admin |
+| PATCH | `/trainer-packages/{trainerPackage}` | Admin |
+| DELETE | `/trainer-packages/{trainerPackage}` | Admin |
+| GET | `/boxing-packages` | Admin |
+| GET | `/boxing-packages/{boxingPackage}` | Admin |
+| POST | `/boxing-packages` | Admin |
+| PUT | `/boxing-packages/{boxingPackage}` | Admin |
+| PATCH | `/boxing-packages/{boxingPackage}` | Admin |
+| DELETE | `/boxing-packages/{boxingPackage}` | Admin |
 | GET | `/subscriptions` | Admin |
 | POST | `/subscriptions` | Admin |
 | GET | `/subscriptions/options` | Admin |
 | POST | `/subscriptions/{subscription}/hold` | Admin |
 | POST | `/subscriptions/{subscription}/resume` | Admin |
+| POST | `/attendance/rfid/scan` | Auth |
 | GET | `/attendance/users` | Admin |
 | GET | `/attendance/qr` | Admin |
 | GET | `/attendance/records` | Admin |
@@ -1102,7 +1159,9 @@ GET /captcha/api/default
 | POST | `/attendance/scan` | Admin |
 | POST | `/attendance/scan/qr` | Admin |
 | POST | `/attendance/qr/refresh` | Admin |
+| POST | `/attendance/rfid/register` | Admin |
 | GET | `/dashboard/attendance-report` | Admin |
+| GET | `/dashboard/growth-summary` | Admin |
 | GET | `/dashboard/export/{format}` | Admin |
 | GET | `/messages` | Admin |
 | GET | `/messages/{user}` | Admin |
@@ -1111,18 +1170,24 @@ GET /captcha/api/default
 | GET | `/trainer/check-in` | Trainer |
 | POST | `/trainer/check-in/scan` | Trainer |
 | GET | `/trainer/subscriptions` | Trainer |
+| GET | `/trainer/boxing-bookings` | Trainer |
 | GET | `/trainer/messages` | Trainer |
 | POST | `/trainer/messages` | Trainer |
+| POST | `/trainer/bookings/{booking}/confirm` | Trainer |
+| POST | `/trainer/boxing-bookings/{booking}/confirm` | Trainer |
 | GET | `/user/home` | User |
 | GET | `/user/check-in` | User |
 | POST | `/user/check-in/scan` | User |
 | GET | `/user/subscriptions` | User |  
+| GET | `/user/boxing-bookings` | User |
 | GET | `/user/bookings` | User |
 | GET | `/user/messages` | User |
 | POST | `/user/messages` | User |
+| POST | `/user/bookings/{booking}/confirm` | User |
+| POST | `/user/boxing-bookings/{booking}/confirm` | User |
 
 
 ---
 
-**Last Updated:** January 2026  
+**Last Updated:** February 2026  
 **API Version:** 1.0

@@ -49,7 +49,7 @@ class SubscriptionController extends Controller
         return response()->json([
             'subscriptions' => $subscriptions->map(function (MemberMembership $subscription) use ($pricingSetting, $today) {
                 $durationDays = $subscription->plan?->duration_days ?? 0;
-                $price = $this->resolvePlanPrice($durationDays, $pricingSetting);
+                $price = $this->resolvePlanPrice($subscription->plan?->name, $durationDays, $pricingSetting);
 
                 $holdDays = 0;
                 $adjustedEndDate = $subscription->end_date;
@@ -196,11 +196,16 @@ class SubscriptionController extends Controller
         ]);
     }
 
-    private function resolvePlanPrice(?int $durationDays, ?PricingSetting $pricingSetting): ?float
+    private function resolvePlanPrice(?string $planName, ?int $durationDays, ?PricingSetting $pricingSetting): ?float
     {
         if (! $pricingSetting || ! $durationDays) {
             return null;
         }
+
+        if ($planName === self::CLASS_PLAN_NAME) {
+            return (float) $pricingSetting->class_subscription_price;
+        }
+
 
         if ($durationDays >= self::ANNUAL_PLAN_MIN_DAYS) {
             return (float) $pricingSetting->annual_subscription_price;

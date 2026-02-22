@@ -7,6 +7,7 @@ use App\Models\AttendanceScan;
 use App\Models\User;
 use App\Models\MemberMembership;
 use App\Models\TrainerBooking;
+use App\Models\BoxingBooking;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Http\JsonResponse;
@@ -125,12 +126,18 @@ class DashboardController extends Controller
             ->whereBetween('created_at', [$month, $month->copy()->endOfMonth()])
             ->count());
 
+        $boxingBookingCounts = $range->map(fn (Carbon $month) => BoxingBooking::query()
+            ->whereBetween('created_at', [$month, $month->copy()->endOfMonth()])
+            ->count());
+
+
         return response()->json([
             'months' => $months,
             'labels' => $labels,
             'users' => $userCounts,
             'subscriptions' => $subscriptionCounts,
             'trainer_bookings' => $trainerBookingCounts,
+            'boxing_bookings' => $boxingBookingCounts,
         ]);
     }
 }

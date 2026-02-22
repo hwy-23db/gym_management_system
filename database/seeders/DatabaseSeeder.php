@@ -24,6 +24,12 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+
+        $this->call([
+            GymClassSeeder::class,
+        ]);
+
+
         // Optional: Create test users for development
         // User::factory(10)->create();
 

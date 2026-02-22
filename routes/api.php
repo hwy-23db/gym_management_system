@@ -22,6 +22,7 @@ use App\Http\Controllers\Api\TrainerSessionController;
 use App\Http\Controllers\Api\UserMessageController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\UserRecordsController;
+use App\Http\Controllers\Api\GymClassController;
 use Mews\Captcha\Facades\Captcha;
 
 // Login endpoint - rate limiting is handled in LoginRequest class
@@ -233,5 +234,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/messages', [MessageController::class, 'conversations']);
         Route::get('/messages/{user}', [MessageController::class, 'thread']);
         Route::post('/messages/{user}', [MessageController::class, 'store']);
+
+        // Gym class schedule endpoints
+        Route::get('/classes', [GymClassController::class, 'index']);
+        Route::get('/classes/{gymClass}', [GymClassController::class, 'show']);
+        Route::post('/classes', [GymClassController::class, 'store']);
+        Route::put('/classes/{gymClass}', [GymClassController::class, 'update']);
+        Route::patch('/classes/{gymClass}', [GymClassController::class, 'update']);
+        Route::delete('/classes/{gymClass}', [GymClassController::class, 'destroy']);
     });
 });

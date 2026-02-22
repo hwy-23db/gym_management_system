@@ -5,6 +5,7 @@ namespace App\Support;
 use App\Models\AttendanceScan;
 use App\Models\MemberMembership;
 use App\Models\TrainerBooking;
+use App\Models\BoxingBooking;
 use App\Models\User;
 use DateTimeInterface;
 use Illuminate\Support\Collection;
@@ -19,6 +20,9 @@ class DashboardReportExporter
                 ->latest('start_date')
                 ->get(),
             'Trainer Bookings' => TrainerBooking::with(['member', 'trainer'])
+                ->latest('created_at')
+                ->get(),
+            'Boxing Bookings' => BoxingBooking::with(['member', 'trainer', 'boxingPackage'])
                 ->latest('created_at')
                 ->get(),
             'Attendance Scans' => AttendanceScan::with('user')

@@ -572,6 +572,7 @@ GET /api/dashboard/export/json
 ```
 
 **Notes**
+Export includes these worksheets/keys: `Users`, `Subscriptions`, `Trainer Bookings`, `Boxing Bookings`, and `Attendance Scans`.
 - Any other format results in **404**.
 
 ---

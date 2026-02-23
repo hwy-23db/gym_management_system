@@ -93,6 +93,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/my/messages', [UserMessageController::class, 'messages']);
     Route::post('/my/messages', [UserMessageController::class, 'sendMessage']);
 
+    // Gym class schedule endpoints (available to authenticated users)
+    Route::get('/classes', [GymClassController::class, 'index']);
+    Route::get('/classes/{gymClass}', [GymClassController::class, 'show']);
 
     // Root user can create other users (admission, trainer, user)
     Route::post('/admin/register', [AuthController::class, 'register'])
@@ -235,9 +238,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/messages/{user}', [MessageController::class, 'thread']);
         Route::post('/messages/{user}', [MessageController::class, 'store']);
 
-        // Gym class schedule endpoints
-        Route::get('/classes', [GymClassController::class, 'index']);
-        Route::get('/classes/{gymClass}', [GymClassController::class, 'show']);
+        // Gym class schedule management endpoints
         Route::post('/classes', [GymClassController::class, 'store']);
         Route::put('/classes/{gymClass}', [GymClassController::class, 'update']);
         Route::patch('/classes/{gymClass}', [GymClassController::class, 'update']);

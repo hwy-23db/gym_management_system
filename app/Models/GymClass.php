@@ -14,5 +14,6 @@ class GymClass extends Model
     protected $fillable = [
         'class_name',
         'class_day',
+        'class_time',
     ];
 }

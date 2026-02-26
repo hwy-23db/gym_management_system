@@ -64,6 +64,7 @@ class GymClassController extends Controller
         return $request->validate([
             'class_name' => [$requiredRule, 'string', 'max:255'],
             'class_day' => [$requiredRule, 'string', 'max:50'],
+            'class_time' => [$requiredRule, 'date_format:H:i'],
         ]);
     }
 
@@ -73,6 +74,7 @@ class GymClassController extends Controller
             'id' => $gymClass->id,
             'class_name' => $gymClass->class_name,
             'class_day' => $gymClass->class_day,
+            'class_time' => $gymClass->class_time,
             'created_at' => $gymClass->created_at?->toIso8601String(),
             'updated_at' => $gymClass->updated_at?->toIso8601String(),
         ];

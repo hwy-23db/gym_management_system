@@ -50,6 +50,22 @@ class SubscriptionController extends Controller
             'subscriptions' => $subscriptions->map(function (MemberMembership $subscription) use ($pricingSetting, $today) {
                 $durationDays = $subscription->plan?->duration_days ?? 0;
                 $price = $this->resolvePlanPrice($subscription->plan?->name, $durationDays, $pricingSetting);
+                $discountPercentage = $subscription->discount_percentage !== null
+                    ? (float) $subscription->discount_percentage
+                    : null;
+                $storedFinalPrice = $subscription->final_price !== null
+                    ? (float) $subscription->final_price
+                    : null;
+
+                $finalPrice = $storedFinalPrice;
+
+                if (
+                    ($finalPrice === null || $finalPrice <= 0)
+                    && ($discountPercentage === null || $discountPercentage <= 0)
+                    && $price !== null
+                ) {
+                    $finalPrice = (float) $price;
+                }
 
                 $holdDays = 0;
                 $adjustedEndDate = $subscription->end_date;
@@ -71,8 +87,8 @@ class SubscriptionController extends Controller
                     'plan_name' => $subscription->plan?->name ?? 'Plan',
                     'duration_days' => $durationDays,
                     'price' => $price,
-                    'discount_percentage' => (float) ($subscription->discount_percentage ?? 0),
-                    'final_price' => (float) ($subscription->final_price ?? $price ?? 0),
+                    'discount_percentage' => $discountPercentage,
+                    'final_price' => $finalPrice ?? 0,
                     'created_at' => optional($subscription->created_at)->toIso8601String(),
                     'start_date' => optional($subscription->start_date)->toDateString(),
                     'end_date' => optional($adjustedEndDate)->toDateString(),
@@ -143,13 +159,22 @@ class SubscriptionController extends Controller
         );
 
         $price = $this->resolvePlanPrice($plan->name, $plan->duration_days, $pricingSetting) ?? 0;
-        $discountPercentage = (float) ($data['discount_percentage'] ?? 0);
-        $finalPrice = $price - ($price * ($discountPercentage / 100));
+        $hasDiscount = array_key_exists('discount_percentage', $data)
+            && $data['discount_percentage'] !== null
+            && $data['discount_percentage'] !== '';
+
+        $discountPercentage = $hasDiscount
+            ? (float) $data['discount_percentage']
+            : null;
+
+        $finalPrice = $hasDiscount
+            ? $price - ($price * ($discountPercentage / 100))
+            : $price;
 
         $subscription = MemberMembership::create([
             'member_id' => $data['member_id'], // ✅ user id
             'membership_plan_id' => $plan->id,
-            'discount_percentage' => round($discountPercentage, 2),
+            'discount_percentage' => $discountPercentage !== null ? round($discountPercentage, 2) : null,
             'final_price' => round($finalPrice, 2),
             'start_date' => $startDate->toDateString(),
             'end_date' => $endDate->toDateString(),

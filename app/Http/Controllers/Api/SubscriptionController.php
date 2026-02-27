@@ -116,6 +116,7 @@ class SubscriptionController extends Controller
             ],
             'membership_plan_id' => ['required', 'exists:membership_plans,id'],
             'start_date' => ['nullable', 'date'],
+            'discount_percentage' => ['nullable', 'numeric', 'between:0,100'],
         ]);
 
         $plan = MembershipPlan::query()->findOrFail($data['membership_plan_id']);
@@ -128,9 +129,26 @@ class SubscriptionController extends Controller
             ? $startDate->copy()->addDays((int) $plan->duration_days)
             : $startDate->copy();
 
+        $pricingSetting = PricingSetting::query()->firstOrCreate(
+            [],
+            [
+                'class_subscription_price' => 70000,
+                'monthly_subscription_price' => 80000,
+                'three_month_subscription_price' => 240000,
+                'quarterly_subscription_price' => 400000,
+                'annual_subscription_price' => 960000,
+            ]
+        );
+
+        $price = $this->resolvePlanPrice($plan->name, $plan->duration_days, $pricingSetting) ?? 0;
+        $discountPercentage = (float) ($data['discount_percentage'] ?? 0);
+        $finalPrice = $price - ($price * ($discountPercentage / 100));
+
         $subscription = MemberMembership::create([
             'member_id' => $data['member_id'], // ✅ user id
             'membership_plan_id' => $plan->id,
+            'discount_percentage' => round($discountPercentage, 2),
+            'final_price' => round($finalPrice, 2),
             'start_date' => $startDate->toDateString(),
             'end_date' => $endDate->toDateString(),
             'is_expired' => false,

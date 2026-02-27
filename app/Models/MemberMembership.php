@@ -10,6 +10,8 @@ class MemberMembership extends Model
     protected $fillable = [
         'member_id',
         'membership_plan_id',
+        'discount_percentage',
+        'final_price',
         'start_date',
         'end_date',
         'is_expired',
@@ -20,6 +22,8 @@ class MemberMembership extends Model
     protected $casts = [
         'start_date' => 'date',
         'end_date' => 'date',
+        'discount_percentage' => 'decimal:2',
+        'final_price' => 'decimal:2',
         'is_expired' => 'boolean',
         'is_on_hold' => 'boolean',
         'hold_started_at' => 'date',
